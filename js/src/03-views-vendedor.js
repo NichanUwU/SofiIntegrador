@@ -16,13 +16,13 @@ function viewVendedorDashboard(){
           {cli:'A. Pérez',    lot:'A-02',monto:'$420K',prox:'22/Jul'},
         ].map(c=>`
         <div class="alert-card success" style="cursor:pointer" onclick="navigate('detalle-contrato')">
-          <div class="alert-icon">📄</div>
+          <div class="alert-icon"></div>
           <div class="alert-text">
             <strong>${c.cli} · Lote ${c.lot}</strong>
             <span>${c.monto} · Próximo pago: ${c.prox}</span>
           </div>
         </div>`).join('')}
-        <button class="btn-outline btn-sm" onclick="navigate('contratos')">Ver todos mis contratos →</button>
+        <button class="btn-outline btn-sm" onclick="navigate('contratos')">Ver todos mis contratos</button>
       </div>
     </div>
     <div class="chart-card">
@@ -34,7 +34,7 @@ function viewVendedorDashboard(){
           {t:'Contrato próximo',d:'M. García · Finaliza en 2 meses',type:'warn'},
         ].map(a=>`
         <div class="alert-card ${a.type}">
-          <div class="alert-icon">${a.type==='error'?'❗':'⚠'}</div>
+          <div class="alert-icon"></div>
           <div class="alert-text"><strong>${a.t}</strong><span>${a.d}</span></div>
         </div>`).join('')}
       </div>
@@ -46,7 +46,7 @@ function viewVendedorClientes(){
   return `
   <div class="section-header">
     <div class="section-title">Mis Clientes</div>
-    <button class="btn-accent" onclick="navigate('crear-cliente')">＋ Nuevo Cliente</button>
+    <button class="btn-accent" onclick="navigate('crear-cliente')">Nuevo Cliente</button>
   </div>
   <div class="table-wrap">
     <div class="table-toolbar">
@@ -85,7 +85,7 @@ function viewVendedorLotes(){
     <div class="section-title">Lotes Disponibles</div>
     <div style="display:flex;gap:8px">
       <select class="filter-select"><option>Todos los Desarrollos</option><option>Las Palmas</option><option>Vista del Lago</option></select>
-      <button class="btn-outline btn-sm" onclick="navigate('simulador')">💲 Simulador</button>
+      <button class="btn-outline btn-sm" onclick="navigate('simulador')">Simulador</button>
     </div>
   </div>
   ${['Las Palmas Residencial','Vista del Lago'].map(dev=>`
@@ -108,7 +108,7 @@ function viewSimulador(){
   <div style="max-width:600px">
     <div class="section-header">
       <div class="section-title">Simulador de Financiamiento</div>
-      <button class="btn-outline btn-sm" onclick="navigate('lotes')">← Regresar</button>
+      <button class="btn-outline btn-sm" onclick="navigate('lotes')">Regresar</button>
     </div>
     <div class="form-card">
       <div class="form-grid">
@@ -127,8 +127,8 @@ function viewSimulador(){
         <div class="sim-item"><div class="sim-label">Mensualidad</div><div class="sim-val">$10,084</div></div>
         <div class="sim-item"><div class="sim-label">Total a Pagar</div><div class="sim-val">$439,024</div></div>
       </div>
-      <div class="form-actions">
-        <button class="btn-accent" onclick="navigate('crear-contrato')">📄 Generar Contrato con estos datos</button>
+        <div class="form-actions">
+        <button class="btn-accent" onclick="navigate('crear-contrato')">Generar Contrato con estos datos</button>
       </div>
     </div>
   </div>`;
@@ -138,7 +138,7 @@ function viewVendedorContratos(){
   return `
   <div class="section-header">
     <div class="section-title">Mis Contratos</div>
-    <button class="btn-accent" onclick="navigate('crear-contrato')">＋ Nuevo Contrato</button>
+    <button class="btn-accent" onclick="navigate('crear-contrato')">Nuevo Contrato</button>
   </div>
   <div class="table-wrap">
     <div class="table-toolbar">

@@ -374,8 +374,8 @@ function viewDetalleCliente(){
       <p style="font-size:12px;color:var(--c-muted)">ID: C-001 · RFC: HELJ801234AB1</p>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn-outline btn-sm" onclick="navigate('clientes')">← Regresar</button>
-      <button class="btn-accent btn-sm">✏ Editar</button>
+      <button class="btn-outline btn-sm" onclick="navigate('clientes')">Regresar</button>
+      <button class="btn-accent btn-sm">Editar</button>
     </div>
   </div>
   <div class="two-col" style="align-items:start">
@@ -395,7 +395,7 @@ function viewDetalleCliente(){
           .map(t=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--c-border)">
             <span style="font-size:13px">${t.n}</span><span class="chip chip-gray">${t.r}</span>
           </div>`).join('')}
-        <button class="btn-outline btn-sm" style="margin-top:10px">＋ Agregar Testigo</button>
+        <button class="btn-outline btn-sm" style="margin-top:10px">Agregar Testigo</button>
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:16px">
@@ -404,7 +404,7 @@ function viewDetalleCliente(){
         ${[{id:'CON-0051',lot:'A-01',dev:'Las Palmas',monto:'$380K',st:'Activo'},
            {id:'CON-0062',lot:'B-01',dev:'Vista del Lago',monto:'$295K',st:'Activo'}]
           .map(c=>`<div class="alert-card success" style="margin-bottom:8px;cursor:pointer" onclick="navigate('detalle-contrato')">
-            <div class="alert-icon">📄</div>
+            <div class="alert-icon"></div>
             <div class="alert-text">
               <strong>${c.id} · Lote ${c.lot}</strong>
               <span>${c.dev} · ${c.monto}</span>
@@ -415,13 +415,13 @@ function viewDetalleCliente(){
       <div class="form-card">
         <div class="chart-title" style="margin-bottom:12px">Documentos Adjuntos</div>
         <div class="doc-zone" onclick="showToast('Seleccionar archivo…','')">
-          📁<br><span style="font-size:12px;color:var(--c-muted)">Clic para subir documento</span>
+          <br><span style="font-size:12px;color:var(--c-muted)">Clic para subir documento</span>
         </div>
         <div class="doc-list" style="margin-top:10px">
           ${[{n:'INE_Frente.pdf',s:'1.2 MB'},{n:'Comprobante_Domicilio.pdf',s:'890 KB'}]
-            .map(d=>`<div class="doc-item"><div class="doc-icon">📄</div>
+            .map(d=>`<div class="doc-item"><div class="doc-icon"></div>
               <div class="doc-name">${d.n}</div><div class="doc-size">${d.s}</div>
-              <button class="btn-outline btn-sm">⬇</button></div>`).join('')}
+              <button class="btn-outline btn-sm">Descargar</button></div>`).join('')}
         </div>
       </div>
     </div>
@@ -432,7 +432,7 @@ function viewContratos(){
   return `
   <div class="section-header">
     <div class="section-title">Contratos</div>
-    <button class="btn-accent" onclick="navigate('crear-contrato')">＋ Nuevo Contrato</button>
+    <button class="btn-accent" onclick="navigate('crear-contrato')">Nuevo Contrato</button>
   </div>
   <div class="table-wrap">
     <div class="table-toolbar">

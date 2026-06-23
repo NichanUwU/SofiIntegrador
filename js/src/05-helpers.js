@@ -58,24 +58,24 @@ function showModal(id) {
 
   if (id === 'alertas-modal') {
     overlay.innerHTML = `<div class="modal-box" role="dialog" aria-modal="true" aria-label="Alertas del sistema">
-      <div class="modal-title">🔔 Alertas del Sistema</div>
+      <div class="modal-title">Alertas del Sistema</div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <div class="alert-card error"><div class="alert-icon">❗</div>
+        <div class="alert-card error"><div class="alert-icon"></div>
           <div class="alert-text"><strong>Pago atrasado · J. Hernández</strong><span>$10,556 – vencido 12/Jun</span></div></div>
-        <div class="alert-card"><div class="alert-icon">⚠</div>
+        <div class="alert-card"><div class="alert-icon"></div>
           <div class="alert-text"><strong>Contrato próximo a vencer</strong><span>CON-0241 – vence en 5 días</span></div></div>
-        <div class="alert-card error"><div class="alert-icon">❗</div>
+        <div class="alert-card error"><div class="alert-icon"></div>
           <div class="alert-text"><strong>Pago atrasado · R. Domínguez</strong><span>$14,167 – vencido 05/Jun</span></div></div>
       </div>
       <div class="modal-actions"><button class="btn-outline" onclick="closeModal()">Cerrar</button></div>
     </div>`;
   } else if (id === 'confirm-delete') {
     overlay.innerHTML = `<div class="modal-box" role="dialog" aria-modal="true" aria-label="Confirmar eliminación">
-      <div class="modal-title">⚠ Confirmar Eliminación</div>
+      <div class="modal-title">Confirmar Eliminación</div>
       <div class="modal-body">¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.</div>
       <div class="modal-actions">
         <button class="btn-outline" onclick="closeModal()">Cancelar</button>
-        <button class="btn-danger" onclick="showToast('Registro eliminado','success');closeModal()">🗑 Eliminar</button>
+        <button class="btn-danger" onclick="showToast('Registro eliminado','success');closeModal()">Eliminar</button>
       </div>
     </div>`;
   }
@@ -97,7 +97,7 @@ function showToast(msg, type) {
   const t = document.createElement('div');
   t.className = `toast toast-${type === 'success' ? 'success' : type === 'error' ? 'error' : 'info'}`;
   t.setAttribute('role', 'status');
-  t.textContent = (type === 'success' ? '✓ ' : type === 'error' ? '✗ ' : '') + msg;
+  t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }

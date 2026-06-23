@@ -18,43 +18,43 @@ const roleMeta = {
 const navConfig = {
   directivo: [
     { section: 'PRINCIPAL', items: [
-      { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+      { id: 'dashboard', icon: '', label: 'Dashboard' },
     ]},
     { section: 'INMUEBLES', items: [
-      { id: 'desarrollos', icon: '🏘', label: 'Desarrollos' },
-      { id: 'lotes',       icon: '🗂', label: 'Lotes' },
+      { id: 'desarrollos', icon: '', label: 'Desarrollos' },
+      { id: 'lotes',       icon: '', label: 'Lotes' },
     ]},
     { section: 'COMERCIAL', items: [
-      { id: 'clientes',  icon: '👥', label: 'Clientes' },
-      { id: 'contratos', icon: '📄', label: 'Contratos' },
+      { id: 'clientes',  icon: '', label: 'Clientes' },
+      { id: 'contratos', icon: '', label: 'Contratos' },
     ]},
     { section: 'FINANZAS', items: [
-      { id: 'flujo',    icon: '💰', label: 'Flujo de Efectivo' },
-      { id: 'analisis', icon: '📈', label: 'Análisis Financiero' },
+      { id: 'flujo',    icon: '', label: 'Flujo de Efectivo' },
+      { id: 'analisis', icon: '', label: 'Análisis Financiero' },
     ]},
     { section: 'ADMINISTRACIÓN', items: [
-      { id: 'usuarios', icon: '👤', label: 'Usuarios' },
-      { id: 'roles',    icon: '🔑', label: 'Roles' },
+      { id: 'usuarios', icon: '', label: 'Usuarios' },
+      { id: 'roles',    icon: '', label: 'Roles' },
     ]},
   ],
   vendedor: [
     { section: 'PRINCIPAL', items: [
-      { id: 'dashboard', icon: '📊', label: 'Mi Dashboard' },
+      { id: 'dashboard', icon: '', label: 'Mi Dashboard' },
     ]},
     { section: 'VENTAS', items: [
-      { id: 'clientes',  icon: '👥', label: 'Mis Clientes' },
-      { id: 'lotes',     icon: '🗂', label: 'Lotes Disponibles' },
-      { id: 'contratos', icon: '📄', label: 'Mis Contratos' },
+      { id: 'clientes',  icon: '', label: 'Mis Clientes' },
+      { id: 'lotes',     icon: '', label: 'Lotes Disponibles' },
+      { id: 'contratos', icon: '', label: 'Mis Contratos' },
     ]},
   ],
   asistente: [
     { section: 'PRINCIPAL', items: [
-      { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+      { id: 'dashboard', icon: '', label: 'Dashboard' },
     ]},
     { section: 'OPERATIVO', items: [
-      { id: 'flujo',    icon: '💰', label: 'Flujo de Efectivo' },
-      { id: 'clientes', icon: '👥', label: 'Clientes' },
-      { id: 'testigos', icon: '📝', label: 'Testigos' },
+      { id: 'flujo',    icon: '', label: 'Flujo de Efectivo' },
+      { id: 'clientes', icon: '', label: 'Clientes' },
+      { id: 'testigos', icon: '', label: 'Testigos' },
     ]},
   ],
 };
@@ -84,7 +84,7 @@ function selectRole(role, el) {
   el.classList.add('active');
 }
 
-function doLogin() {
+async function doLogin() {
   const emailInput = document.getElementById('login-email');
   const errorBox   = document.getElementById('login-error');
 
@@ -98,6 +98,19 @@ function doLogin() {
     return;
   }
   if (errorBox) errorBox.classList.remove('visible');
+  // If an API client is configured, try server-side login. Otherwise continue local flow.
+  try {
+    if (window.api && typeof window.api.login === 'function') {
+      await window.api.login(emailInput.value.trim());
+    }
+  } catch (err) {
+    if (errorBox) {
+      errorBox.textContent = 'Error iniciando sesión en el servidor.';
+      errorBox.classList.add('visible');
+    }
+    console.error('login error', err);
+    // proceed to local shell anyway so dev can continue (optional: stop here if desired)
+  }
 
   document.getElementById('login-screen').style.display = 'none';
   const shell = document.getElementById('app-shell');
@@ -238,7 +251,7 @@ function renderView(id) {
       default: return viewAsistenteDashboard();
     }
   }
-  return '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Vista no encontrada</div></div>';
+  return '<div class="empty-state"><div class="empty-icon"></div><div class="empty-title">Vista no encontrada</div></div>';
 }
 
 /* Cierra la barra lateral móvil si la ventana crece a escritorio */
