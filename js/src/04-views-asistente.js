@@ -21,7 +21,7 @@ function viewAsistenteDashboard(){
           background:${a.done?'var(--c-light-bg)':'var(--c-white)'};border:1px solid var(--c-border)">
           <span style="font-size:11px;color:var(--c-muted);width:38px;flex-shrink:0">${a.t}</span>
           <span style="font-size:13px;${a.done?'text-decoration:line-through;color:var(--c-muted)':''}">${a.d}</span>
-          ${a.done?'<span style="margin-left:auto;color:var(--c-accent)">Hecho</span>':''}
+          ${a.done?'<span style="margin-left:auto;color:var(--c-accent)">✓</span>':''}
         </div>`).join('')}
       </div>
     </div>
@@ -34,7 +34,7 @@ function viewAsistenteDashboard(){
           {n:'L. Sánchez',  c:'CON-0055',m:'$8,500', d:'01/Jun'},
         ].map(p=>`
         <div class="alert-card error">
-          <div class="alert-icon"></div>
+          <div class="alert-icon">❗</div>
           <div class="alert-text">
             <strong>${p.n} · ${p.c}</strong>
             <span>${p.m} – vencido ${p.d}</span>
@@ -50,7 +50,7 @@ function viewAsistenteFlujo(){
   return `
   <div class="section-header">
     <div class="section-title">Flujo de Efectivo</div>
-    <button class="btn-accent" onclick="navigate('registrar-pago')">Registrar Pago</button>
+    <button class="btn-accent" onclick="navigate('registrar-pago')">＋ Registrar Pago</button>
   </div>
   <div class="table-wrap">
     <div class="table-toolbar">
@@ -72,7 +72,7 @@ function viewAsistenteFlujo(){
         <td><span class="chip ${f.st==='Pagado'?'chip-green':'chip-red'}">${f.st}</span></td>
         <td style="display:flex;gap:4px">
           <button class="btn-outline btn-sm" onclick="navigate('detalle-pago')">Ver</button>
-          <button class="btn-accent btn-sm" onclick="navigate('registrar-pago')">Editar</button>
+          <button class="btn-accent btn-sm" onclick="navigate('registrar-pago')">✏</button>
         </td>
       </tr>`).join('')}
     </tbody>
@@ -86,7 +86,7 @@ function viewRegistrarPago(){
   <div style="max-width:620px">
     <div class="section-header">
       <div class="section-title">Registrar Pago</div>
-      <button class="btn-outline btn-sm" onclick="navigate('flujo')">Regresar</button>
+      <button class="btn-outline btn-sm" onclick="navigate('flujo')">← Regresar</button>
     </div>
     <div class="form-card">
       <div class="form-grid">
@@ -123,8 +123,8 @@ function viewDetallePago(){
       ${detailRow('Tipo','<span class="chip chip-green">Ingreso</span>')}
       ${detailRow('Concepto','Mensualidad Junio 2025')}
       ${detailRow('Estatus','<span class="chip chip-green">Pagado</span>')}
-        <div class="form-actions">
-        <button class="btn-outline" onclick="navigate('registrar-pago')">Editar</button>
+      <div class="form-actions">
+        <button class="btn-outline" onclick="navigate('registrar-pago')">✏ Editar</button>
       </div>
     </div>
   </div>`;
@@ -154,8 +154,8 @@ function viewAsistenteClientes(){
         <td><span class="chip ${c.docs==='Completo'?'chip-green':'chip-warn'}">${c.docs}</span></td>
         <td style="font-size:12px;color:var(--c-muted)">${c.upd}</td>
         <td style="display:flex;gap:6px">
-          <button class="btn-outline btn-sm">Editar</button>
-          <button class="btn-outline btn-sm">Documentos</button>
+          <button class="btn-outline btn-sm">✏ Editar</button>
+          <button class="btn-outline btn-sm">📁 Documentos</button>
         </td>
       </tr>`).join('')}
     </tbody>
@@ -168,7 +168,7 @@ function viewTestigos(){
   return `
   <div class="section-header">
     <div class="section-title">Testigos</div>
-    <button class="btn-accent" onclick="navigate('crear-testigo')">Nuevo Testigo</button>
+    <button class="btn-accent" onclick="navigate('crear-testigo')">＋ Nuevo Testigo</button>
   </div>
   <div class="table-wrap">
     <div class="table-toolbar">
@@ -188,7 +188,7 @@ function viewTestigos(){
         <td style="font-size:12px;color:var(--c-muted)">${t.dom}</td>
         <td style="display:flex;gap:6px">
           <button class="btn-outline btn-sm">Ver</button>
-          <button class="btn-outline btn-sm">Editar</button>
+          <button class="btn-outline btn-sm">✏</button>
         </td>
       </tr>`).join('')}
     </tbody>

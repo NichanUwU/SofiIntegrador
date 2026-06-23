@@ -66,9 +66,9 @@ function viewDesignSystem() {
     <div class="ds-section">
       <div class="ds-section-title">Botones</div>
       <div class="ds-row" style="margin-bottom:12px">
-        <button class="btn-accent">Nuevo</button>
-        <button class="btn-outline">Regresar</button>
-        <button class="btn-danger">Eliminar</button>
+        <button class="btn-accent">＋ Nuevo</button>
+        <button class="btn-outline">← Regresar</button>
+        <button class="btn-danger">🗑 Eliminar</button>
         <button class="btn-accent" disabled>Deshabilitado</button>
       </div>
       <div style="max-width:300px">
@@ -105,11 +105,11 @@ function viewDesignSystem() {
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;max-width:600px">
         <div class="alert-card error">
-          <div class="alert-icon"></div>
+          <div class="alert-icon">❗</div>
           <div class="alert-text"><strong>Pago atrasado · J. Hernández</strong><span>$8,500 vencido el 01/Jun</span></div>
         </div>
         <div class="alert-card">
-          <div class="alert-icon"></div>
+          <div class="alert-icon">⚠</div>
           <div class="alert-text"><strong>Contrato próximo a vencer</strong><span>C-0241 · L. Pérez vence en 5 días</span></div>
         </div>
       </div>
