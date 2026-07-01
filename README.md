@@ -80,3 +80,4 @@ superior, en cualquier rol.
   de 900px de ancho.
 - Los datos mostrados son de ejemplo (mock), pensados para conectarse a
   un backend real más adelante.
+# SOFI2
