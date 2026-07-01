@@ -85,9 +85,73 @@ const viewLabels = {
   'design-system': 'Sistema de Diseño',
 };
 
+const standalonePageMap = {
+  dashboard: 'dashboard',
+  desarrollos: 'desarrollos',
+  lotes: 'lotes',
+  clientes: 'clientes',
+  contratos: 'contratos',
+  flujo: 'flujo',
+  analisis: 'analisis',
+  usuarios: 'usuarios',
+  roles: 'roles',
+  'design-system': 'design-system'
+};
+
+const standalonePageFiles = {
+  login: 'login.html',
+  dashboard: 'dashboard.html',
+  desarrollos: 'desarrollos.html',
+  lotes: 'lotes.html',
+  clientes: 'clientes.html',
+  contratos: 'contratos.html',
+  flujo: 'flujo.html',
+  analisis: 'analisis.html',
+  usuarios: 'usuarios.html',
+  roles: 'roles.html',
+  'design-system': 'design-system.html'
+};
+
+function getCurrentStandalonePage() {
+  const path = window.location.pathname.split('/').pop() || '';
+  return path.replace(/\.html$/i, '') || 'login';
+}
+
+function setRoleUI() {
+  const m = roleMeta[currentRole] || roleMeta.directivo;
+  const roleBadge = document.getElementById('sb-role-badge');
+  const avatar = document.getElementById('sb-avatar');
+  const nameEl = document.getElementById('sb-name');
+  const roleEl = document.getElementById('sb-role');
+  if (roleBadge) roleBadge.textContent = m.label;
+  if (avatar) avatar.textContent = m.badge;
+  if (nameEl) nameEl.textContent = m.name;
+  if (roleEl) roleEl.textContent = m.label;
+}
+
+function getPageTarget(viewId) {
+  return standalonePageFiles[viewId] || `${viewId}.html`;
+}
+
+function initStandalonePage() {
+  const pageName = getCurrentStandalonePage();
+  if (pageName === 'login') return;
+
+  currentRole = sessionStorage.getItem('sofi-role') || 'directivo';
+  const shell = document.getElementById('app-shell');
+  if (shell) shell.classList.add('visible');
+  const loginScreen = document.getElementById('login-screen');
+  if (loginScreen) loginScreen.style.display = 'none';
+  setRoleUI();
+  buildNav();
+  const viewId = standalonePageMap[pageName] || 'dashboard';
+  navigate(viewId);
+}
+
 /* ---- LOGIN / LOGOUT ---- */
 function selectRole(role, el) {
   currentRole = role;
+  sessionStorage.setItem('sofi-role', role);
   var roleBtns = document.querySelectorAll('.role-btn');
   for (var i = 0; i < roleBtns.length; i++) roleBtns[i].classList.remove('active');
   el.classList.add('active');
@@ -108,30 +172,32 @@ function doLogin() {
   }
   if (errorBox) errorBox.classList.remove('visible');
 
+  sessionStorage.setItem('sofi-role', currentRole);
   document.getElementById('login-screen').style.display = 'none';
   const shell = document.getElementById('app-shell');
-  shell.classList.add('visible');
-  const m = roleMeta[currentRole];
-  document.getElementById('sb-role-badge').textContent = m.label;
-  document.getElementById('sb-avatar').textContent     = m.badge;
-  document.getElementById('sb-name').textContent       = m.name;
-  document.getElementById('sb-role').textContent       = m.label;
+  if (shell) shell.classList.add('visible');
+  setRoleUI();
   buildNav();
-  navigate('dashboard');
+  window.location.href = 'dashboard.html';
 }
 
 function doLogout() {
-  document.getElementById('app-shell').classList.remove('visible');
+  sessionStorage.removeItem('sofi-role');
+  const shell = document.getElementById('app-shell');
+  if (shell) shell.classList.remove('visible');
   var sb = document.getElementById('sidebar');
   var scrim = document.getElementById('sidebar-scrim');
   if (sb) sb.classList.remove('open');
   if (scrim) scrim.classList.remove('visible');
-  document.getElementById('login-screen').style.display = 'flex';
+  const loginScreen = document.getElementById('login-screen');
+  if (loginScreen) loginScreen.style.display = 'flex';
+  window.location.href = 'login.html';
 }
 
 /* ---- SIDEBAR: CONSTRUCCIÓN Y TOGGLE MÓVIL ---- */
 function buildNav() {
   const nav = document.getElementById('sb-nav');
+  if (!nav) return;
   nav.innerHTML = '';
   navConfig[currentRole].forEach(section => {
     const lbl = document.createElement('div');
@@ -139,15 +205,13 @@ function buildNav() {
     lbl.textContent = section.section;
     nav.appendChild(lbl);
     section.items.forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'nav-item';
-      div.dataset.id = item.id;
-      div.setAttribute('role', 'button');
-      div.setAttribute('tabindex', '0');
-      div.innerHTML = `<span class="nav-icon">${item.icon}</span>${item.label}`;
-      div.onclick = () => { navigate(item.id); closeSidebarOnMobile(); };
-      div.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); div.click(); } };
-      nav.appendChild(div);
+      const anchor = document.createElement('a');
+      anchor.className = 'nav-item';
+      anchor.dataset.id = item.id;
+      anchor.setAttribute('href', getPageTarget(item.id));
+      anchor.innerHTML = `<span class="nav-icon">${item.icon}</span>${item.label}`;
+      anchor.addEventListener('click', () => { closeSidebarOnMobile(); });
+      nav.appendChild(anchor);
     });
   });
 }
@@ -251,6 +315,7 @@ function renderView(id) {
 }
 
 /* Cierra la barra lateral móvil si la ventana crece a escritorio */
+window.addEventListener('DOMContentLoaded', initStandalonePage);
 window.addEventListener('resize', function() {
   if (window.innerWidth > 900) {
     var sb = document.getElementById('sidebar');
