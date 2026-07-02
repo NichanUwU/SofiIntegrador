@@ -5,7 +5,7 @@
 
 /* ---- CONFIGURACIÓN API ---- */
 // Reemplaza esto con la IP pública real de tu servidor AWS
-const API_URL = 'http:44.222.29.255:3000/api';
+const API_URL = 'http://44.222.29.255:3000/api';
 
 /* ---- ESTADO ---- */
 let currentRole = 'directivo';

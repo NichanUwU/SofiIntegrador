@@ -106,35 +106,14 @@ function viewDirectivoDashboard(){
 }
 
 function viewDesarrollos(){
+  setTimeout(() => fetchDesarrollos(), 0);
   return `
   <div class="section-header">
     <div class="section-title">Desarrollos Inmobiliarios</div>
     <button class="btn-accent" onclick="navigate('crear-desarrollo')">＋ Nuevo Desarrollo</button>
   </div>
-  <div class="dev-map" style="margin-bottom:24px">
-    ${[
-      {name:'Las Palmas Residencial',loc:'Querétaro, Qro.',lotes:100,disp:32,icon:'🏡',status:'Activo'},
-      {name:'Vista del Lago',loc:'Guadalajara, Jal.',lotes:60,disp:20,icon:'🌊',status:'Activo'},
-      {name:'El Encino',loc:'CDMX',lotes:40,disp:15,icon:'🌳',status:'Activo'},
-      {name:'Hacienda San José',loc:'Monterrey, NL',lotes:80,disp:80,icon:'🏰',status:'Preventa'},
-      {name:'Jardines del Sur',loc:'Puebla, Pue.',lotes:55,disp:0,icon:'🌺',status:'Cerrado'},
-      {name:'Bosques Norte',loc:'León, Gto.',lotes:90,disp:45,icon:'🌲',status:'Activo'},
-    ].map(d=>`
-    <div class="dev-card" onclick="navigate('detalle-desarrollo')">
-      <div class="dev-card-thumb">${d.icon}</div>
-      <div class="dev-card-body">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div class="dev-card-name">${d.name}</div>
-          <span class="chip ${d.status==='Activo'?'chip-green':d.status==='Preventa'?'chip-warn':'chip-gray'}">${d.status}</span>
-        </div>
-        <div class="dev-card-meta">📍 ${d.loc}</div>
-        <div class="dev-card-stats">
-          <div class="dev-stat"><div class="dev-stat-num">${d.lotes}</div><div class="dev-stat-label">Total</div></div>
-          <div class="dev-stat"><div class="dev-stat-num" style="color:var(--c-accent)">${d.disp}</div><div class="dev-stat-label">Disponibles</div></div>
-          <div class="dev-stat"><div class="dev-stat-num" style="color:var(--c-error)">${d.lotes-d.disp}</div><div class="dev-stat-label">Vendidos</div></div>
-        </div>
-      </div>
-    </div>`).join('')}
+  <div class="dev-map" id="cards-desarrollos-body" style="margin-bottom:24px">
+    <div class="alert-card" style="width:100%;text-align:center;">Cargando desarrollos...</div>
   </div>`;
 }
 
@@ -201,6 +180,7 @@ function viewDetalleDesarrollo(){
 }
 
 function viewLotes(){
+  setTimeout(() => fetchLotes(), 0);
   return `
   <div class="section-header">
     <div class="section-title">Gestión de Lotes</div>
@@ -214,24 +194,12 @@ function viewLotes(){
     </div>
     <table>
       <thead><tr><th>ID</th><th>Desarrollo</th><th>Núm. Lote</th><th>Superficie (m²)</th><th>Precio de Lista</th><th>Estatus</th><th>Acciones</th></tr></thead>
-      <tbody>
-        ${[
-          {id:'L-001',dev:'Las Palmas',num:'A-01',m:120,precio:'$380,000',st:'Disponible'},
-          {id:'L-002',dev:'Las Palmas',num:'A-02',m:135,precio:'$420,000',st:'Vendido'},
-          {id:'L-003',dev:'Vista del Lago',num:'B-01',m:98,precio:'$295,000',st:'Reservado'},
-          {id:'L-004',dev:'El Encino',num:'C-01',m:200,precio:'$680,000',st:'Disponible'},
-          {id:'L-005',dev:'Las Palmas',num:'A-03',m:110,precio:'$355,000',st:'Vendido'},
-          {id:'L-006',dev:'Bosques Norte',num:'D-01',m:150,precio:'$510,000',st:'Disponible'},
-        ].map(l=>`<tr>
-          <td style="font-weight:600">${l.id}</td>
-          <td>${l.dev}</td><td>${l.num}</td><td>${l.m}</td><td style="font-weight:600">${l.precio}</td>
-          <td><span class="chip ${l.st==='Disponible'?'chip-green':l.st==='Vendido'?'chip-red':'chip-warn'}">${l.st}</span></td>
-          <td><button class="btn-outline btn-sm" onclick="navigate('detalle-lote')">Ver</button></td>
-        </tr>`).join('')}
+      <tbody id="tabla-lotes-body">
+        <tr><td colspan="7">Cargando lotes...</td></tr>
       </tbody>
     </table>
     <div class="table-pagination">
-      <span>Mostrando 1–6 de 84 lotes</span>
+      <span>Mostrando lotes reales desde backend</span>
       <div style="display:flex;gap:4px">
         <button class="pag-btn active">1</button><button class="pag-btn">2</button>
         <button class="pag-btn">3</button><button class="pag-btn">…</button><button class="pag-btn">14</button>
@@ -302,6 +270,7 @@ function viewDetalleLote(){
 }
 
 function viewClientes(){
+  setTimeout(() => fetchClientes(), 0);
   return `
   <div class="section-header">
     <div class="section-title">Clientes</div>
@@ -309,31 +278,17 @@ function viewClientes(){
   </div>
   <div class="table-wrap">
     <div class="table-toolbar">
-      <input class="search-input" placeholder="Buscar por nombre, RFC…" style="max-width:260px">
+      <input class="search-input" placeholder="Buscar por nombre, INE…" style="max-width:260px">
       <select class="filter-select"><option>Todos los estados</option><option>Activo</option><option>Inactivo</option></select>
     </div>
     <table>
-      <thead><tr><th>ID</th><th>Nombre Completo</th><th>RFC</th><th>Teléfono</th><th>Estado Civil</th><th>Contratos</th><th>Acciones</th></tr></thead>
-      <tbody>
-        ${[
-          {id:'C-001',n:'Juan Hernández López',rfc:'HELJ801234AB1',tel:'442-100-2000',ec:'Casado',ctrs:2},
-          {id:'C-002',n:'María García Torres',rfc:'GATM920315CD2',tel:'33-9000-1234',ec:'Soltera',ctrs:1},
-          {id:'C-003',n:'Roberto Domínguez',rfc:'DORR780501EF3',tel:'55-4000-5678',ec:'Divorciado',ctrs:1},
-          {id:'C-004',n:'Ana Pérez Villanueva',rfc:'PEVA850922GH4',tel:'81-2345-6789',ec:'Casada',ctrs:3},
-          {id:'C-005',n:'Luis Sánchez Mora',rfc:'SAML940710IJ5',tel:'222-100-3456',ec:'Soltero',ctrs:1},
-        ].map(c=>`<tr>
-          <td style="font-weight:600">${c.id}</td>
-          <td>${c.n}</td><td style="font-size:12px;font-family:monospace">${c.rfc}</td>
-          <td>${c.tel}</td><td>${c.ec}</td>
-          <td><span class="chip chip-blue">${c.ctrs} contrato${c.ctrs>1?'s':''}</span></td>
-          <td style="display:flex;gap:6px">
-            <button class="btn-outline btn-sm" onclick="navigate('detalle-cliente')">Ver</button>
-          </td>
-        </tr>`).join('')}
+      <thead><tr><th>ID</th><th>Nombre Completo</th><th>Teléfono</th><th>INE</th><th>CURP</th><th>Dirección</th><th>Acciones</th></tr></thead>
+      <tbody id="tabla-clientes-body">
+        <tr><td colspan="7">Cargando clientes...</td></tr>
       </tbody>
     </table>
     <div class="table-pagination">
-      <span>Mostrando 1–5 de 248 clientes</span>
+      <span>Mostrando clientes reales desde backend</span>
       <div style="display:flex;gap:4px">
         <button class="pag-btn active">1</button><button class="pag-btn">2</button><button class="pag-btn">…</button>
       </div>
@@ -429,6 +384,7 @@ function viewDetalleCliente(){
 }
 
 function viewContratos(){
+  setTimeout(() => fetchContratos(), 0);
   return `
   <div class="section-header">
     <div class="section-title">Contratos</div>
@@ -442,29 +398,146 @@ function viewContratos(){
     </div>
     <table>
       <thead><tr><th>ID</th><th>Cliente</th><th>Lote</th><th>Vendedor</th><th>Fecha</th><th>Monto Total</th><th>Plazo</th><th>Estatus</th><th>Acciones</th></tr></thead>
-      <tbody>
-        ${[
-          {id:'CON-0051',cli:'J. Hernández',lote:'A-01',vend:'M. Rodríguez',fecha:'12/Jan/2025',monto:'$380,000',plazo:'36m',st:'Activo'},
-          {id:'CON-0052',cli:'M. García',lote:'B-01',vend:'L. García',fecha:'18/Feb/2025',monto:'$295,000',plazo:'24m',st:'Activo'},
-          {id:'CON-0053',cli:'R. Domínguez',lote:'C-01',vend:'M. Rodríguez',fecha:'05/Mar/2025',monto:'$680,000',plazo:'48m',st:'Atrasado'},
-          {id:'CON-0054',cli:'A. Pérez',lote:'A-02',vend:'P. Torres',fecha:'22/Apr/2025',monto:'$420,000',plazo:'36m',st:'Activo'},
-          {id:'CON-0055',cli:'L. Sánchez',lote:'D-01',vend:'R. Sánchez',fecha:'01/May/2025',monto:'$510,000',plazo:'60m',st:'Liquidado'},
-        ].map(c=>`<tr>
-          <td style="font-weight:600">${c.id}</td><td>${c.cli}</td><td>${c.lote}</td>
-          <td>${c.vend}</td><td>${c.fecha}</td>
-          <td style="font-weight:600">${c.monto}</td><td>${c.plazo}</td>
-          <td><span class="chip ${c.st==='Activo'?'chip-green':c.st==='Atrasado'?'chip-red':'chip-blue'}">${c.st}</span></td>
-          <td><button class="btn-outline btn-sm" onclick="navigate('detalle-contrato')">Ver</button></td>
-        </tr>`).join('')}
+      <tbody id="tabla-contratos-body">
+        <tr><td colspan="9">Cargando contratos...</td></tr>
       </tbody>
     </table>
     <div class="table-pagination">
-      <span>Mostrando 1–5 de 142 contratos</span>
+      <span>Mostrando contratos reales desde backend</span>
       <div style="display:flex;gap:4px">
         <button class="pag-btn active">1</button><button class="pag-btn">2</button><button class="pag-btn">…</button>
       </div>
     </div>
   </div>`;
+}
+
+function formatCurrency(value) {
+  if (value == null || value === '') return '—';
+  const normalized = Number(String(value).replace(/[^0-9.-]+/g, ''));
+  if (Number.isNaN(normalized)) return String(value);
+  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(normalized);
+}
+
+function formatDate(value) {
+  if (!value) return 'N/A';
+  const date = new Date(value);
+  return isNaN(date) ? String(value) : date.toLocaleDateString('es-MX');
+}
+
+async function fetchDesarrollos() {
+  try {
+    const res = await fetch(`${API_URL}/desarrollos`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const container = document.getElementById('cards-desarrollos-body');
+    if (!container) return;
+    if (!Array.isArray(data) || data.length === 0) {
+      container.innerHTML = '<div class="alert-card" style="width:100%;text-align:center;">No hay desarrollos registrados.</div>';
+      return;
+    }
+    container.innerHTML = data.map(d => `
+      <div class="dev-card" onclick="navigate('detalle-desarrollo')">
+        <div class="dev-card-thumb">🏡</div>
+        <div class="dev-card-body">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div class="dev-card-name">${d.Nombre ?? 'Sin nombre'}</div>
+            <span class="chip chip-green">Activo</span>
+          </div>
+          <div class="dev-card-meta">📍 ${d.Ubicacion ?? 'Ubicación no disponible'}</div>
+          <div class="dev-card-stats">
+            <div class="dev-stat"><div class="dev-stat-num">ID ${d.IdDesarrollo ?? '—'}</div><div class="dev-stat-label">ID</div></div>
+            <div class="dev-stat"><div class="dev-stat-num">${formatDate(d.Fecha_inicio)}</div><div class="dev-stat-label">Inicio</div></div>
+            <div class="dev-stat"><div class="dev-stat-num">—</div><div class="dev-stat-label">Lotes</div></div>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch (err) {
+    const container = document.getElementById('cards-desarrollos-body');
+    if (container) container.innerHTML = `<div class="alert-card" style="width:100%;text-align:center;">Error: ${err.message}</div>`;
+  }
+}
+
+async function fetchLotes() {
+  try {
+    const res = await fetch(`${API_URL}/lotes`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const tbody = document.getElementById('tabla-lotes-body');
+    if (!tbody) return;
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7">No hay lotes registrados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(l => `
+      <tr>
+        <td style="font-weight:600">${l.IdLote ?? ''}</td>
+        <td>${l.IdManzana != null ? `Mzn. ${l.IdManzana}` : 'N/A'}</td>
+        <td>${l.Numero ?? ''}</td>
+        <td>${l.Medidas ?? ''}</td>
+        <td style="font-weight:600">${formatCurrency(l.Precio)}</td>
+        <td><span class="chip ${l.Estado === 'Disponible' ? 'chip-green' : l.Estado === 'Vendido' ? 'chip-red' : 'chip-warn'}">${l.Estado ?? 'Desconocido'}</span></td>
+        <td><button class="btn-outline btn-sm" onclick="navigate('detalle-lote')">Ver</button></td>
+      </tr>`).join('');
+  } catch (err) {
+    const tbody = document.getElementById('tabla-lotes-body');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7">Error: ${err.message}</td></tr>`;
+  }
+}
+
+async function fetchClientes() {
+  try {
+    const res = await fetch(`${API_URL}/clientes`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const tbody = document.getElementById('tabla-clientes-body');
+    if (!tbody) return;
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7">No hay clientes registrados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(c => `
+      <tr>
+        <td style="font-weight:600">${c.IdCliente ?? ''}</td>
+        <td>${c.Nombre ?? ''}</td>
+        <td>${c.Telefono ?? ''}</td>
+        <td style="font-family:monospace">${c.INE ?? ''}</td>
+        <td style="font-family:monospace">${c.CURP ?? ''}</td>
+        <td>${c.Direccion ?? ''}</td>
+        <td style="display:flex;gap:6px"><button class="btn-outline btn-sm" onclick="navigate('detalle-cliente')">Ver</button></td>
+      </tr>`).join('');
+  } catch (err) {
+    const tbody = document.getElementById('tabla-clientes-body');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7">Error: ${err.message}</td></tr>`;
+  }
+}
+
+async function fetchContratos() {
+  try {
+    const res = await fetch(`${API_URL}/contratos`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const tbody = document.getElementById('tabla-contratos-body');
+    if (!tbody) return;
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9">No hay contratos registrados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(c => `
+      <tr>
+        <td style="font-weight:600">${c.IdContrato ?? ''}</td>
+        <td>${c.Cliente ?? ''}</td>
+        <td>${c.Lote != null ? `Lote ${c.Lote}` : ''}</td>
+        <td>${c.Vendedor ?? ''}</td>
+        <td>${formatDate(c.Fecha)}</td>
+        <td style="font-weight:600">—</td>
+        <td>—</td>
+        <td><span class="chip chip-blue">${c.Estatus ?? 'Activo'}</span></td>
+        <td><button class="btn-outline btn-sm" onclick="navigate('detalle-contrato')">Ver</button></td>
+      </tr>`).join('');
+  } catch (err) {
+    const tbody = document.getElementById('tabla-contratos-body');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="9">Error: ${err.message}</td></tr>`;
+  }
 }
 
 function viewCrearContrato(){
