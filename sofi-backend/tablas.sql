@@ -30,10 +30,28 @@ CREATE TABLE LOTE (
         ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
+-- NUEVA TABLA: Colindancias específicas por cada Lote
+CREATE TABLE COLINDANCIA (
+    IdColindancia INT AUTO_INCREMENT PRIMARY KEY,
+    Norte VARCHAR(255),
+    Sur VARCHAR(255),
+    Este VARCHAR(255),
+    Oeste VARCHAR(255),
+    IdLote INT NOT NULL UNIQUE, -- UNIQUE garantiza que un lote no tenga colindancias duplicadas
+    CONSTRAINT fk_colindancia_lote 
+        FOREIGN KEY (IdLote) REFERENCES LOTE(IdLote)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE CLIENTE (
     IdCliente INT AUTO_INCREMENT PRIMARY KEY,
-    Nombre VARCHAR(150) NOT NULL,
-    Direccion VARCHAR(255) NOT NULL,
+    Nombre VARCHAR(100) NOT NULL,
+    Apellidos VARCHAR(100) NOT NULL,
+    Direccion VARCHAR(150) NOT NULL,
+    Casa_Apartamento VARCHAR(50),
+    Codigo_Postal VARCHAR(10) NOT NULL,
+    Ciudad VARCHAR(100) NOT NULL,
+    Estado VARCHAR(100) NOT NULL,
     Telefono VARCHAR(20) NOT NULL,
     INE VARCHAR(50) NOT NULL UNIQUE,
     CURP VARCHAR(50) NOT NULL UNIQUE
@@ -41,8 +59,13 @@ CREATE TABLE CLIENTE (
 
 CREATE TABLE TESTIGO (
     IdTestigo INT AUTO_INCREMENT PRIMARY KEY,
-    Nombre VARCHAR(150) NOT NULL,
-    Direccion VARCHAR(255),
+    Nombre VARCHAR(100) NOT NULL,
+    Apellidos VARCHAR(100) NOT NULL,
+    Direccion VARCHAR(150),
+    Casa_Apartamento VARCHAR(50),
+    Codigo_Postal VARCHAR(10),
+    Ciudad VARCHAR(100),
+    Estado VARCHAR(100),
     Telefono VARCHAR(20),
     IdCliente INT NOT NULL,
     CONSTRAINT fk_testigo_cliente 
@@ -54,7 +77,11 @@ CREATE TABLE EMPLEADO (
     IdEmpleado INT AUTO_INCREMENT PRIMARY KEY,
     Nombre VARCHAR(100) NOT NULL,
     Apellidos VARCHAR(100) NOT NULL,
-    Domicilio VARCHAR(255),
+    Direccion VARCHAR(150),
+    Casa_Apartamento VARCHAR(50),
+    Codigo_Postal VARCHAR(10),
+    Ciudad VARCHAR(100),
+    Estado VARCHAR(100),
     Telefono VARCHAR(20),
     Cargo VARCHAR(50) NOT NULL,
     Email VARCHAR(150) NOT NULL UNIQUE
@@ -71,21 +98,16 @@ CREATE TABLE USUARIO (
         ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
-CREATE TABLE MODALIDAD_PAGO (
-    IdModalidadPago INT AUTO_INCREMENT PRIMARY KEY,
-    Tipo VARCHAR(100) NOT NULL,
-    MontoFijo DECIMAL(12, 2) NOT NULL DEFAULT 0.00
-) ENGINE=InnoDB;
-
 CREATE TABLE CONTRATO (
     IdContrato INT AUTO_INCREMENT PRIMARY KEY,
     Plantilla VARCHAR(100),
     Fecha DATE NOT NULL,
     Hora TIME NOT NULL,
+    TipoPago VARCHAR(100) NOT NULL,
+    MontoFijo DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
     IdCliente INT NOT NULL,
     IdEmpleado INT NOT NULL,
     IdLote INT NOT NULL UNIQUE,
-    IdModalidad INT NOT NULL,
     CONSTRAINT fk_contrato_cliente 
         FOREIGN KEY (IdCliente) REFERENCES CLIENTE(IdCliente)
         ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -94,9 +116,6 @@ CREATE TABLE CONTRATO (
         ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_contrato_lote 
         FOREIGN KEY (IdLote) REFERENCES LOTE(IdLote)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT fk_contrato_modalidad 
-        FOREIGN KEY (IdModalidad) REFERENCES MODALIDAD_PAGO(IdModalidadPago)
         ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
