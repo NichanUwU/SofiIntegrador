@@ -3,6 +3,10 @@
    Estado global, autenticación, navegación y router de vistas.
    ============================================================ */
 
+/* ---- CONFIGURACIÓN API ---- */
+// Reemplaza esto con la IP pública real de tu servidor AWS
+const API_URL = 'http:44.222.29.255:3000/api';
+
 /* ---- ESTADO ---- */
 let currentRole = 'directivo';
 let currentView = 'dashboard';
@@ -17,9 +21,7 @@ const roleMeta = {
 /* ---- CONFIGURACIÓN DE NAVEGACIÓN POR ROL ---- */
 const navConfig = {
   directivo: [
-    { section: 'PRINCIPAL', items: [
-      { id: 'dashboard', icon: '📊', label: 'Dashboard' },
-    ]},
+    { section: 'PRINCIPAL', items: [{ id: 'dashboard', icon: '📊', label: 'Dashboard' }] },
     { section: 'INMUEBLES', items: [
       { id: 'desarrollos', icon: '🏘', label: 'Desarrollos' },
       { id: 'lotes',       icon: '🗂', label: 'Lotes' },
@@ -38,9 +40,7 @@ const navConfig = {
     ]},
   ],
   vendedor: [
-    { section: 'PRINCIPAL', items: [
-      { id: 'dashboard', icon: '📊', label: 'Mi Dashboard' },
-    ]},
+    { section: 'PRINCIPAL', items: [{ id: 'dashboard', icon: '📊', label: 'Mi Dashboard' }] },
     { section: 'VENTAS', items: [
       { id: 'clientes',  icon: '👥', label: 'Mis Clientes' },
       { id: 'lotes',     icon: '🗂', label: 'Lotes Disponibles' },
@@ -48,9 +48,7 @@ const navConfig = {
     ]},
   ],
   asistente: [
-    { section: 'PRINCIPAL', items: [
-      { id: 'dashboard', icon: '📊', label: 'Dashboard' },
-    ]},
+    { section: 'PRINCIPAL', items: [{ id: 'dashboard', icon: '📊', label: 'Dashboard' }] },
     { section: 'OPERATIVO', items: [
       { id: 'flujo',    icon: '💰', label: 'Flujo de Efectivo' },
       { id: 'clientes', icon: '👥', label: 'Clientes' },
@@ -59,8 +57,7 @@ const navConfig = {
   ],
 };
 
-/* Etiquetas de breadcrumb para TODAS las vistas, incluyendo sub-vistas
-   (crear / detalle), para que el breadcrumb nunca quede vacío. */
+/* Etiquetas de breadcrumb */
 const viewLabels = {
   dashboard: 'Dashboard',
   desarrollos: 'Desarrollos', 'crear-desarrollo': 'Nuevo Desarrollo', 'detalle-desarrollo': 'Detalle de Desarrollo',
@@ -77,32 +74,17 @@ const viewLabels = {
 };
 
 const standalonePageMap = {
-  dashboard: 'dashboard',
-  desarrollos: 'desarrollos',
-  lotes: 'lotes',
-  clientes: 'clientes',
-  contratos: 'contratos',
-  flujo: 'flujo',
-  analisis: 'analisis',
-  usuarios: 'usuarios',
-  roles: 'roles',
-  'design-system': 'design-system'
+  dashboard: 'dashboard', desarrollos: 'desarrollos', lotes: 'lotes', clientes: 'clientes', 
+  contratos: 'contratos', flujo: 'flujo', analisis: 'analisis', usuarios: 'usuarios', 
+  roles: 'roles', 'design-system': 'design-system'
 };
 
-const standalonePageFiles = {
-  login: 'login.html',
-  dashboard: 'dashboard.html',
-  desarrollos: 'desarrollos.html',
-  lotes: 'lotes.html',
-  clientes: 'clientes.html',
-  contratos: 'contratos.html',
-  flujo: 'flujo.html',
-  analisis: 'analisis.html',
-  usuarios: 'usuarios.html',
-  roles: 'roles.html',
-  'design-system': 'design-system.html'
-};
+const standalonePageFiles = Object.keys(standalonePageMap).reduce((acc, key) => {
+  acc[key] = `${key}.html`;
+  return acc;
+}, { login: 'login.html' });
 
+/* ---- FUNCIONES DE INICIO ---- */
 function getCurrentStandalonePage() {
   const path = window.location.pathname.split('/').pop() || '';
   return path.replace(/\.html$/i, '') || 'login';
@@ -110,14 +92,11 @@ function getCurrentStandalonePage() {
 
 function setRoleUI() {
   const m = roleMeta[currentRole] || roleMeta.directivo;
-  const roleBadge = document.getElementById('sb-role-badge');
-  const avatar = document.getElementById('sb-avatar');
-  const nameEl = document.getElementById('sb-name');
-  const roleEl = document.getElementById('sb-role');
-  if (roleBadge) roleBadge.textContent = m.label;
-  if (avatar) avatar.textContent = m.badge;
-  if (nameEl) nameEl.textContent = m.name;
-  if (roleEl) roleEl.textContent = m.label;
+  const setTxt = (id, text) => { const el = document.getElementById(id); if(el) el.textContent = text; };
+  setTxt('sb-role-badge', m.label);
+  setTxt('sb-avatar', m.badge);
+  setTxt('sb-name', m.name);
+  setTxt('sb-role', m.label);
 }
 
 function getPageTarget(viewId) {
@@ -129,57 +108,77 @@ function initStandalonePage() {
   if (pageName === 'login') return;
 
   currentRole = sessionStorage.getItem('sofi-role') || 'directivo';
-  const shell = document.getElementById('app-shell');
-  if (shell) shell.classList.add('visible');
+  
+  document.getElementById('app-shell')?.classList.add('visible');
   const loginScreen = document.getElementById('login-screen');
   if (loginScreen) loginScreen.style.display = 'none';
+  
   setRoleUI();
   buildNav();
-  const viewId = standalonePageMap[pageName] || 'dashboard';
-  navigate(viewId);
+  navigate(standalonePageMap[pageName] || 'dashboard');
 }
 
-/* ---- LOGIN / LOGOUT ---- */
+/* ---- LOGIN / LOGOUT CON API (AWS) ---- */
 function selectRole(role, el) {
   currentRole = role;
   sessionStorage.setItem('sofi-role', role);
-  var roleBtns = document.querySelectorAll('.role-btn');
-  for (var i = 0; i < roleBtns.length; i++) roleBtns[i].classList.remove('active');
+  document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
   el.classList.add('active');
 }
 
-function doLogin() {
+async function doLogin() {
   const emailInput = document.getElementById('login-email');
   const errorBox   = document.getElementById('login-error');
 
-  // Validación mínima — en un backend real esto se verificaría en servidor.
-  if (emailInput && !emailInput.value.trim()) {
-    if (errorBox) {
-      errorBox.textContent = 'Ingresa tu correo electrónico para continuar.';
-      errorBox.classList.add('visible');
-    }
-    emailInput.focus();
+  const showError = (msg) => {
+    if (errorBox) { errorBox.textContent = msg; errorBox.classList.add('visible'); }
+  };
+
+  if (!emailInput?.value.trim()) {
+    showError('Ingresa tu correo electrónico (NombreUsuario) para continuar.');
+    emailInput?.focus();
     return;
   }
-  if (errorBox) errorBox.classList.remove('visible');
 
-  sessionStorage.setItem('sofi-role', currentRole);
-  document.getElementById('login-screen').style.display = 'none';
-  const shell = document.getElementById('app-shell');
-  if (shell) shell.classList.add('visible');
-  setRoleUI();
-  buildNav();
-  window.location.href = 'dashboard.html';
+  try {
+    // Aquí mandamos el usuario a Javalin (Contraseña quemada por ahora, hasta que agregues el input visual)
+    const payload = {
+      NombreUsuario: emailInput.value.trim(),
+      Contrasena: "TuContrasenaAqui123" 
+    };
+
+    const response = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error('Credenciales incorrectas');
+
+    const usuario = await response.json();
+    currentRole = usuario.Rol.toLowerCase(); // Guarda si es directivo, vendedor o asistente
+    sessionStorage.setItem('sofi-role', currentRole);
+
+    errorBox?.classList.remove('visible');
+    
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-shell')?.classList.add('visible');
+    
+    setRoleUI();
+    buildNav();
+    window.location.href = 'dashboard.html';
+
+  } catch (error) {
+    showError(error.message || 'Error al conectar con el servidor.');
+  }
 }
 
 function doLogout() {
   sessionStorage.removeItem('sofi-role');
-  const shell = document.getElementById('app-shell');
-  if (shell) shell.classList.remove('visible');
-  var sb = document.getElementById('sidebar');
-  var scrim = document.getElementById('sidebar-scrim');
-  if (sb) sb.classList.remove('open');
-  if (scrim) scrim.classList.remove('visible');
+  document.getElementById('app-shell')?.classList.remove('visible');
+  document.getElementById('sidebar')?.classList.remove('open');
+  document.getElementById('sidebar-scrim')?.classList.remove('visible');
+  
   const loginScreen = document.getElementById('login-screen');
   if (loginScreen) loginScreen.style.display = 'flex';
   window.location.href = 'login.html';
@@ -190,78 +189,77 @@ function buildNav() {
   const nav = document.getElementById('sb-nav');
   if (!nav) return;
   nav.innerHTML = '';
+  
   navConfig[currentRole].forEach(section => {
     const lbl = document.createElement('div');
     lbl.className = 'nav-section-label';
     lbl.textContent = section.section;
     nav.appendChild(lbl);
+    
     section.items.forEach(item => {
       const anchor = document.createElement('a');
       anchor.className = 'nav-item';
       anchor.dataset.id = item.id;
       anchor.setAttribute('href', getPageTarget(item.id));
       anchor.innerHTML = `<span class="nav-icon">${item.icon}</span>${item.label}`;
-      anchor.addEventListener('click', () => { closeSidebarOnMobile(); });
+      anchor.addEventListener('click', closeSidebarOnMobile);
       nav.appendChild(anchor);
     });
   });
 }
 
 function toggleSidebar() {
-  var sb = document.getElementById('sidebar');
-  var scrim = document.getElementById('sidebar-scrim');
-  if (sb) sb.classList.toggle('open');
-  if (scrim) scrim.classList.toggle('visible');
+  document.getElementById('sidebar')?.classList.toggle('open');
+  document.getElementById('sidebar-scrim')?.classList.toggle('visible');
 }
+
 function closeSidebarOnMobile() {
   if (window.innerWidth <= 900) {
-    var sb = document.getElementById('sidebar');
-    var scrim = document.getElementById('sidebar-scrim');
-    if (sb) sb.classList.remove('open');
-    if (scrim) scrim.classList.remove('visible');
+    document.getElementById('sidebar')?.classList.remove('open');
+    document.getElementById('sidebar-scrim')?.classList.remove('visible');
   }
 }
 
 /* ---- NAVEGACIÓN ---- */
 function navigate(viewId, subLabel) {
   currentView = viewId;
-  var navItems = document.querySelectorAll('.nav-item');
-  for (var i = 0; i < navItems.length; i++) {
-    var n = navItems[i];
-    if (n.dataset.id === viewId) n.classList.add('active');
-    else n.classList.remove('active');
-  }
+  
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.id === viewId);
+  });
 
   const lbl = subLabel || viewLabels[viewId] || viewId;
-  document.getElementById('breadcrumb').innerHTML =
-    `<span>SOFI</span><span class="sep">›</span><span class="current">${lbl}</span>`;
+  const breadcrumb = document.getElementById('breadcrumb');
+  if (breadcrumb) {
+    breadcrumb.innerHTML = `<span>SOFI</span><span class="sep">›</span><span class="current">${lbl}</span>`;
+  }
 
   const pc = document.getElementById('page-content');
-  pc.innerHTML = renderView(viewId);
-  pc.scrollTop = 0;
+  if (pc) {
+    pc.innerHTML = renderView(viewId);
+    pc.scrollTop = 0;
+  }
 }
 
 /* Alias retro-compatible usado por algunas vistas heredadas */
-function navigate2(viewId, sub) { navigate(viewId, sub); }
+const navigate2 = (viewId, sub) => navigate(viewId, sub);
 
 /* ---- ENRUTADOR DE VISTAS ---- */
 function renderView(id) {
-  // Ruta global, disponible sin importar el rol activo.
   if (id === 'design-system') return viewDesignSystem();
 
   const r = currentRole;
   if (r === 'directivo') {
     switch (id) {
-      case 'dashboard':   return viewDirectivoDashboard();
-      case 'desarrollos': return viewDesarrollos();
-      case 'lotes':       return viewLotes();
-      case 'clientes':    return viewClientes();
-      case 'contratos':   return viewContratos();
-      case 'flujo':       return viewFlujo();
-      case 'analisis':    return viewAnalisis();
-      case 'usuarios':    return viewUsuarios();
-      case 'roles':       return viewRoles();
-      /* sub-vistas */
+      case 'dashboard':          return viewDirectivoDashboard();
+      case 'desarrollos':        return viewDesarrollos();
+      case 'lotes':              return viewLotes();
+      case 'clientes':           return viewClientes();
+      case 'contratos':          return viewContratos();
+      case 'flujo':              return viewFlujo();
+      case 'analisis':           return viewAnalisis();
+      case 'usuarios':           return viewUsuarios();
+      case 'roles':              return viewRoles();
       case 'crear-desarrollo':   return viewCrearDesarrollo();
       case 'detalle-desarrollo': return viewDetalleDesarrollo();
       case 'crear-lote':         return viewCrearLote();
@@ -273,43 +271,40 @@ function renderView(id) {
       case 'crear-usuario':      return viewCrearUsuario();
       case 'crear-rol':          return viewCrearRol();
       case 'detalle-flujo':      return viewDetalleFlujo();
-      default: return viewDirectivoDashboard();
+      default:                   return viewDirectivoDashboard();
     }
   }
   if (r === 'vendedor') {
     switch (id) {
-      case 'dashboard':        return viewVendedorDashboard();
-      case 'clientes':         return viewVendedorClientes();
-      case 'lotes':            return viewVendedorLotes();
-      case 'contratos':        return viewVendedorContratos();
-      case 'crear-cliente':    return viewCrearClienteVend();
-      case 'simulador':        return viewSimulador();
-      case 'detalle-contrato': return viewDetalleContrato();
-      case 'crear-contrato':   return viewCrearContratoVend();
-      case 'detalle-lote':     return viewDetalleLote();
-      default: return viewVendedorDashboard();
+      case 'clientes':           return viewVendedorClientes();
+      case 'lotes':              return viewVendedorLotes();
+      case 'contratos':          return viewVendedorContratos();
+      case 'crear-cliente':      return viewCrearClienteVend();
+      case 'simulador':          return viewSimulador();
+      case 'detalle-contrato':   return viewDetalleContrato();
+      case 'crear-contrato':     return viewCrearContratoVend();
+      case 'detalle-lote':       return viewDetalleLote();
+      default:                   return viewVendedorDashboard();
     }
   }
   if (r === 'asistente') {
     switch (id) {
-      case 'dashboard':      return viewAsistenteDashboard();
-      case 'flujo':          return viewAsistenteFlujo();
-      case 'clientes':       return viewAsistenteClientes();
-      case 'testigos':       return viewTestigos();
-      case 'crear-testigo':  return viewCrearTestigo();
-      case 'registrar-pago': return viewRegistrarPago();
-      case 'detalle-pago':   return viewDetallePago();
-      default: return viewAsistenteDashboard();
+      case 'flujo':              return viewAsistenteFlujo();
+      case 'clientes':           return viewAsistenteClientes();
+      case 'testigos':           return viewTestigos();
+      case 'crear-testigo':      return viewCrearTestigo();
+      case 'registrar-pago':     return viewRegistrarPago();
+      case 'detalle-pago':       return viewDetallePago();
+      default:                   return viewAsistenteDashboard();
     }
   }
   return '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Vista no encontrada</div></div>';
 }
 
-/* Cierra la barra lateral móvil si la ventana crece a escritorio */
+/* Listeners globales */
 window.addEventListener('DOMContentLoaded', initStandalonePage);
-window.addEventListener('resize', function() {
+window.addEventListener('resize', () => {
   if (window.innerWidth > 900) {
-    var sb = document.getElementById('sidebar');
-    if (sb) sb.classList.remove('open');
+    document.getElementById('sidebar')?.classList.remove('open');
   }
 });
