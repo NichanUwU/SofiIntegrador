@@ -210,27 +210,32 @@ function viewLotes(){
 
 function viewCrearLote(){
   return `
-  <div style="max-width:680px">
+  <div style="max-width:760px">
     <div class="section-header">
       <div class="section-title">Nuevo Lote</div>
-      <button class="btn-outline btn-sm" onclick="navigate('lotes')">← Regresar</button>
+      <button class="btn-outline btn-sm" onclick="navigate('lotes')">Regresar</button>
     </div>
     <div class="form-card">
       <div class="form-grid">
         <div class="form-group"><label>Desarrollo *</label>
           <select><option>Seleccionar…</option><option>Las Palmas</option><option>Vista del Lago</option></select></div>
         <div class="form-group"><label>Número de Lote *</label>
-          <input type="text" placeholder="Ej. A-12"></div>
+          <input id="lote-numero" type="text" placeholder="Ej. A-12"></div>
         <div class="form-group"><label>Superficie (m²) *</label>
-          <input type="number" placeholder="120" min="1"></div>
+          <input id="lote-medidas" type="number" placeholder="120" min="1"></div>
         <div class="form-group"><label>Precio de Lista *</label>
-          <input type="number" placeholder="350000" min="0"></div>
+          <input id="lote-precio" type="number" placeholder="350000" min="0"></div>
         <div class="form-group"><label>Estatus *</label>
-          <select><option>Disponible</option><option>Vendido</option><option>Reservado</option></select></div>
+          <select id="lote-estado"><option>Disponible</option><option>Vendido</option><option>Reservado</option></select></div>
+        <div class="form-group full"><label>Colindancias</label></div>
+        <div class="form-group"><label>Norte</label><input id="lote-norte" placeholder="Descripción del colindante"></div>
+        <div class="form-group"><label>Sur</label><input id="lote-sur" placeholder="Descripción del colindante"></div>
+        <div class="form-group"><label>Este</label><input id="lote-este" placeholder="Descripción del colindante"></div>
+        <div class="form-group"><label>Oeste</label><input id="lote-oeste" placeholder="Descripción del colindante"></div>
       </div>
       <div class="form-actions">
         <button class="btn-outline" onclick="navigate('lotes')">Cancelar</button>
-        <button class="btn-accent" onclick="showToast('Lote creado','success');navigate('lotes')">Guardar Lote</button>
+        <button class="btn-accent" onclick="guardarLote()">Guardar Lote</button>
       </div>
     </div>
   </div>`;
@@ -274,17 +279,17 @@ function viewClientes(){
   return `
   <div class="section-header">
     <div class="section-title">Clientes</div>
-    <button class="btn-accent" onclick="navigate('crear-cliente')">＋ Nuevo Cliente</button>
+    <button class="btn-accent" onclick="navigate('crear-cliente')">Nuevo Cliente</button>
   </div>
   <div class="table-wrap">
     <div class="table-toolbar">
-      <input class="search-input" placeholder="Buscar por nombre, INE…" style="max-width:260px">
+      <input class="search-input" placeholder="Buscar por nombre, ciudad o estado…" style="max-width:280px">
       <select class="filter-select"><option>Todos los estados</option><option>Activo</option><option>Inactivo</option></select>
     </div>
     <table>
-      <thead><tr><th>ID</th><th>Nombre Completo</th><th>Teléfono</th><th>INE</th><th>CURP</th><th>Dirección</th><th>Acciones</th></tr></thead>
+      <thead><tr><th>ID</th><th>Nombre Completo</th><th>Teléfono</th><th>Ciudad</th><th>Estado</th><th>Acciones</th></tr></thead>
       <tbody id="tabla-clientes-body">
-        <tr><td colspan="7">Cargando clientes...</td></tr>
+        <tr><td colspan="6">Cargando clientes...</td></tr>
       </tbody>
     </table>
     <div class="table-pagination">
@@ -298,24 +303,27 @@ function viewClientes(){
 
 function viewCrearCliente(){
   return `
-  <div style="max-width:720px">
+  <div style="max-width:760px">
     <div class="section-header">
       <div class="section-title">Nuevo Cliente</div>
-      <button class="btn-outline btn-sm" onclick="navigate('clientes')">← Regresar</button>
+      <button class="btn-outline btn-sm" onclick="navigate('clientes')">Regresar</button>
     </div>
     <div class="form-card">
       <div class="form-grid">
-        <div class="form-group full"><label>Nombre Completo *</label><input placeholder="Nombre Apellido Apellido"></div>
-        <div class="form-group"><label>RFC *</label><input placeholder="XXXX000000XX0"><span class="hint">13 caracteres (personas físicas)</span></div>
-        <div class="form-group"><label>CURP *</label><input placeholder="XXXXXXXXXXXXXXXXXXXX"><span class="hint">18 caracteres</span></div>
-        <div class="form-group full"><label>Dirección *</label><input placeholder="Calle, Número, Colonia, CP, Ciudad, Estado"></div>
-        <div class="form-group"><label>Teléfono *</label><input type="tel" placeholder="442-100-0000"></div>
-        <div class="form-group"><label>Estado Civil *</label>
-          <select><option>Seleccionar…</option><option>Soltero/a</option><option>Casado/a</option><option>Divorciado/a</option><option>Viudo/a</option><option>Unión libre</option></select></div>
+        <div class="form-group"><label>Nombre *</label><input id="cliente-nombre" placeholder="Juan"></div>
+        <div class="form-group"><label>Apellidos *</label><input id="cliente-apellidos" placeholder="Hernández López"></div>
+        <div class="form-group full"><label>Dirección *</label><input id="cliente-direccion" placeholder="Calle y número"></div>
+        <div class="form-group"><label>Casa / Apartamento</label><input id="cliente-casa-apartamento" placeholder="Casa 12 o Apto 3B"></div>
+        <div class="form-group"><label>Código Postal *</label><input id="cliente-cp" placeholder="76000"></div>
+        <div class="form-group"><label>Ciudad *</label><input id="cliente-ciudad" placeholder="Querétaro"></div>
+        <div class="form-group"><label>Estado *</label><input id="cliente-estado" placeholder="Querétaro"></div>
+        <div class="form-group"><label>Teléfono *</label><input id="cliente-telefono" type="tel" placeholder="442-100-0000"></div>
+        <div class="form-group"><label>INE</label><input id="cliente-ine" placeholder="1234567890"></div>
+        <div class="form-group"><label>CURP *</label><input id="cliente-curp" placeholder="HELG000101HQRNPN05"></div>
       </div>
       <div class="form-actions">
         <button class="btn-outline" onclick="navigate('clientes')">Cancelar</button>
-        <button class="btn-accent" onclick="showToast('Cliente registrado','success');navigate('clientes')">Guardar Cliente</button>
+        <button class="btn-accent" onclick="guardarCliente()">Guardar Cliente</button>
       </div>
     </div>
   </div>`;
@@ -498,11 +506,10 @@ async function fetchClientes() {
     tbody.innerHTML = data.map(c => `
       <tr>
         <td style="font-weight:600">${c.IdCliente ?? ''}</td>
-        <td>${c.Nombre ?? ''}</td>
+        <td>${[c.Nombre, c.Apellidos].filter(Boolean).join(' ')}</td>
         <td>${c.Telefono ?? ''}</td>
-        <td style="font-family:monospace">${c.INE ?? ''}</td>
-        <td style="font-family:monospace">${c.CURP ?? ''}</td>
-        <td>${c.Direccion ?? ''}</td>
+        <td>${c.Ciudad ?? ''}</td>
+        <td>${c.Estado ?? ''}</td>
         <td style="display:flex;gap:6px"><button class="btn-outline btn-sm" onclick="navigate('detalle-cliente')">Ver</button></td>
       </tr>`).join('');
   } catch (err) {
@@ -540,30 +547,114 @@ async function fetchContratos() {
   }
 }
 
+async function guardarCliente() {
+  const payload = {
+    Nombre: document.getElementById('cliente-nombre')?.value?.trim() || '',
+    Apellidos: document.getElementById('cliente-apellidos')?.value?.trim() || '',
+    Direccion: document.getElementById('cliente-direccion')?.value?.trim() || '',
+    Casa_Apartamento: document.getElementById('cliente-casa-apartamento')?.value?.trim() || '',
+    Codigo_Postal: document.getElementById('cliente-cp')?.value?.trim() || '',
+    Ciudad: document.getElementById('cliente-ciudad')?.value?.trim() || '',
+    Estado: document.getElementById('cliente-estado')?.value?.trim() || '',
+    Telefono: document.getElementById('cliente-telefono')?.value?.trim() || '',
+    INE: document.getElementById('cliente-ine')?.value?.trim() || '',
+    CURP: document.getElementById('cliente-curp')?.value?.trim() || '',
+  };
+
+  try {
+    const res = await fetch(`${API_URL}/clientes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || data.mensaje || 'No se pudo registrar el cliente');
+    showToast('Cliente registrado correctamente', 'success');
+    navigate('clientes');
+  } catch (err) {
+    showToast(err.message || 'No se pudo registrar el cliente', 'error');
+  }
+}
+
+async function guardarLote() {
+  const payload = {
+    Numero: document.getElementById('lote-numero')?.value?.trim() || '',
+    Medidas: document.getElementById('lote-medidas')?.value?.trim() || '',
+    Precio: document.getElementById('lote-precio')?.value?.trim() || '',
+    Estado: document.getElementById('lote-estado')?.value || 'Disponible',
+    IdManzana: 1,
+    Norte: document.getElementById('lote-norte')?.value?.trim() || '',
+    Sur: document.getElementById('lote-sur')?.value?.trim() || '',
+    Este: document.getElementById('lote-este')?.value?.trim() || '',
+    Oeste: document.getElementById('lote-oeste')?.value?.trim() || ''
+  };
+
+  try {
+    const res = await fetch(`${API_URL}/lotes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || data.mensaje || 'No se pudo registrar el lote');
+    showToast('Lote registrado correctamente', 'success');
+    navigate('lotes');
+  } catch (err) {
+    showToast(err.message || 'No se pudo registrar el lote', 'error');
+  }
+}
+
+async function guardarContrato() {
+  const payload = {
+    Cliente: document.getElementById('contrato-cliente')?.value || '',
+    Lote: document.getElementById('contrato-lote')?.value || '',
+    Vendedor: document.getElementById('contrato-vendedor')?.value || '',
+    Fecha: document.getElementById('contrato-fecha')?.value || '',
+    TipoPago: document.getElementById('contrato-tipopago')?.value || '',
+    MontoFijo: document.getElementById('contrato-montofijo')?.value || '',
+    Notas: document.getElementById('contrato-notas')?.value?.trim() || ''
+  };
+
+  try {
+    const res = await fetch(`${API_URL}/contratos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || data.mensaje || 'No se pudo registrar el contrato');
+    showToast('Contrato registrado correctamente', 'success');
+    navigate('contratos');
+  } catch (err) {
+    showToast(err.message || 'No se pudo registrar el contrato', 'error');
+  }
+}
+
 function viewCrearContrato(){
   return `
-  <div style="max-width:720px">
+  <div style="max-width:760px">
     <div class="section-header">
       <div class="section-title">Nuevo Contrato</div>
-      <button class="btn-outline btn-sm" onclick="navigate('contratos')">← Regresar</button>
+      <button class="btn-outline btn-sm" onclick="navigate('contratos')">Regresar</button>
     </div>
     <div class="form-card">
       <div class="form-grid">
         <div class="form-group"><label>Cliente *</label>
-          <select><option>Seleccionar…</option><option>Juan Hernández</option><option>María García</option></select></div>
+          <select id="contrato-cliente"><option>Seleccionar…</option><option>Juan Hernández</option><option>María García</option></select></div>
         <div class="form-group"><label>Lote *</label>
-          <select><option>Seleccionar…</option><option>A-01 · Las Palmas · $380K</option><option>D-01 · Bosques · $510K</option></select></div>
+          <select id="contrato-lote"><option>Seleccionar…</option><option>A-01 · Las Palmas · $380K</option><option>D-01 · Bosques · $510K</option></select></div>
         <div class="form-group"><label>Vendedor *</label>
-          <select><option>Seleccionar…</option><option>M. Rodríguez</option><option>L. García</option></select></div>
-        <div class="form-group"><label>Fecha de Emisión *</label><input type="date"></div>
-        <div class="form-group"><label>Monto Total *</label><input type="number" placeholder="0.00"></div>
-        <div class="form-group"><label>Plazo de Pago (meses) *</label><input type="number" placeholder="12" min="1"></div>
+          <select id="contrato-vendedor"><option>Seleccionar…</option><option>M. Rodríguez</option><option>L. García</option></select></div>
+        <div class="form-group"><label>Fecha de Emisión *</label><input id="contrato-fecha" type="date"></div>
+        <div class="form-group"><label>Tipo de Pago *</label>
+          <select id="contrato-tipopago"><option>Contado</option><option>Parcial</option><option>Financiamiento</option></select></div>
+        <div class="form-group"><label>Monto Fijo *</label><input id="contrato-montofijo" type="number" placeholder="0.00"></div>
         <div class="form-group full"><label>Notas / Observaciones</label>
-          <textarea rows="3" placeholder="Observaciones adicionales…" style="resize:vertical"></textarea></div>
+          <textarea id="contrato-notas" rows="3" placeholder="Observaciones adicionales…" style="resize:vertical"></textarea></div>
       </div>
       <div class="form-actions">
         <button class="btn-outline" onclick="navigate('contratos')">Cancelar</button>
-        <button class="btn-accent" onclick="showToast('Contrato generado exitosamente','success');navigate('contratos')">Crear Contrato</button>
+        <button class="btn-accent" onclick="guardarContrato()">Crear Contrato</button>
       </div>
     </div>
   </div>`;
