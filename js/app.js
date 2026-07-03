@@ -12,6 +12,10 @@
    Estado global, autenticación, navegación y router de vistas.
    ============================================================ */
 
+/* ---- CONFIGURACIÓN API ---- */
+// Reemplaza esto con la IP pública real de tu servidor AWS
+const API_URL = 'http://54.208.140.131:3000/api';
+
 /* ---- ESTADO ---- */
 let currentRole = 'directivo';
 let currentView = 'dashboard';
@@ -26,9 +30,7 @@ const roleMeta = {
 /* ---- CONFIGURACIÓN DE NAVEGACIÓN POR ROL ---- */
 const navConfig = {
   directivo: [
-    { section: 'PRINCIPAL', items: [
-      { id: 'dashboard', icon: '📊', label: 'Dashboard' },
-    ]},
+    { section: 'PRINCIPAL', items: [{ id: 'dashboard', icon: '📊', label: 'Dashboard' }] },
     { section: 'INMUEBLES', items: [
       { id: 'desarrollos', icon: '🏘', label: 'Desarrollos' },
       { id: 'lotes',       icon: '🗂', label: 'Lotes' },
@@ -47,9 +49,7 @@ const navConfig = {
     ]},
   ],
   vendedor: [
-    { section: 'PRINCIPAL', items: [
-      { id: 'dashboard', icon: '📊', label: 'Mi Dashboard' },
-    ]},
+    { section: 'PRINCIPAL', items: [{ id: 'dashboard', icon: '📊', label: 'Mi Dashboard' }] },
     { section: 'VENTAS', items: [
       { id: 'clientes',  icon: '👥', label: 'Mis Clientes' },
       { id: 'lotes',     icon: '🗂', label: 'Lotes Disponibles' },
@@ -57,9 +57,7 @@ const navConfig = {
     ]},
   ],
   asistente: [
-    { section: 'PRINCIPAL', items: [
-      { id: 'dashboard', icon: '📊', label: 'Dashboard' },
-    ]},
+    { section: 'PRINCIPAL', items: [{ id: 'dashboard', icon: '📊', label: 'Dashboard' }] },
     { section: 'OPERATIVO', items: [
       { id: 'flujo',    icon: '💰', label: 'Flujo de Efectivo' },
       { id: 'clientes', icon: '👥', label: 'Clientes' },
@@ -68,8 +66,7 @@ const navConfig = {
   ],
 };
 
-/* Etiquetas de breadcrumb para TODAS las vistas, incluyendo sub-vistas
-   (crear / detalle), para que el breadcrumb nunca quede vacío. */
+/* Etiquetas de breadcrumb */
 const viewLabels = {
   dashboard: 'Dashboard',
   desarrollos: 'Desarrollos', 'crear-desarrollo': 'Nuevo Desarrollo', 'detalle-desarrollo': 'Detalle de Desarrollo',
@@ -86,32 +83,17 @@ const viewLabels = {
 };
 
 const standalonePageMap = {
-  dashboard: 'dashboard',
-  desarrollos: 'desarrollos',
-  lotes: 'lotes',
-  clientes: 'clientes',
-  contratos: 'contratos',
-  flujo: 'flujo',
-  analisis: 'analisis',
-  usuarios: 'usuarios',
-  roles: 'roles',
-  'design-system': 'design-system'
+  dashboard: 'dashboard', desarrollos: 'desarrollos', lotes: 'lotes', clientes: 'clientes', 
+  contratos: 'contratos', flujo: 'flujo', analisis: 'analisis', usuarios: 'usuarios', 
+  roles: 'roles', 'design-system': 'design-system'
 };
 
-const standalonePageFiles = {
-  login: 'login.html',
-  dashboard: 'dashboard.html',
-  desarrollos: 'desarrollos.html',
-  lotes: 'lotes.html',
-  clientes: 'clientes.html',
-  contratos: 'contratos.html',
-  flujo: 'flujo.html',
-  analisis: 'analisis.html',
-  usuarios: 'usuarios.html',
-  roles: 'roles.html',
-  'design-system': 'design-system.html'
-};
+const standalonePageFiles = Object.keys(standalonePageMap).reduce((acc, key) => {
+  acc[key] = `${key}.html`;
+  return acc;
+}, { login: 'login.html' });
 
+/* ---- FUNCIONES DE INICIO ---- */
 function getCurrentStandalonePage() {
   const path = window.location.pathname.split('/').pop() || '';
   return path.replace(/\.html$/i, '') || 'login';
@@ -119,14 +101,11 @@ function getCurrentStandalonePage() {
 
 function setRoleUI() {
   const m = roleMeta[currentRole] || roleMeta.directivo;
-  const roleBadge = document.getElementById('sb-role-badge');
-  const avatar = document.getElementById('sb-avatar');
-  const nameEl = document.getElementById('sb-name');
-  const roleEl = document.getElementById('sb-role');
-  if (roleBadge) roleBadge.textContent = m.label;
-  if (avatar) avatar.textContent = m.badge;
-  if (nameEl) nameEl.textContent = m.name;
-  if (roleEl) roleEl.textContent = m.label;
+  const setTxt = (id, text) => { const el = document.getElementById(id); if(el) el.textContent = text; };
+  setTxt('sb-role-badge', m.label);
+  setTxt('sb-avatar', m.badge);
+  setTxt('sb-name', m.name);
+  setTxt('sb-role', m.label);
 }
 
 function getPageTarget(viewId) {
@@ -138,57 +117,77 @@ function initStandalonePage() {
   if (pageName === 'login') return;
 
   currentRole = sessionStorage.getItem('sofi-role') || 'directivo';
-  const shell = document.getElementById('app-shell');
-  if (shell) shell.classList.add('visible');
+  
+  document.getElementById('app-shell')?.classList.add('visible');
   const loginScreen = document.getElementById('login-screen');
   if (loginScreen) loginScreen.style.display = 'none';
+  
   setRoleUI();
   buildNav();
-  const viewId = standalonePageMap[pageName] || 'dashboard';
-  navigate(viewId);
+  navigate(standalonePageMap[pageName] || 'dashboard');
 }
 
-/* ---- LOGIN / LOGOUT ---- */
+/* ---- LOGIN / LOGOUT CON API (AWS) ---- */
 function selectRole(role, el) {
   currentRole = role;
   sessionStorage.setItem('sofi-role', role);
-  var roleBtns = document.querySelectorAll('.role-btn');
-  for (var i = 0; i < roleBtns.length; i++) roleBtns[i].classList.remove('active');
+  document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
   el.classList.add('active');
 }
 
-function doLogin() {
+async function doLogin() {
   const emailInput = document.getElementById('login-email');
   const errorBox   = document.getElementById('login-error');
 
-  // Validación mínima — en un backend real esto se verificaría en servidor.
-  if (emailInput && !emailInput.value.trim()) {
-    if (errorBox) {
-      errorBox.textContent = 'Ingresa tu correo electrónico para continuar.';
-      errorBox.classList.add('visible');
-    }
-    emailInput.focus();
+  const showError = (msg) => {
+    if (errorBox) { errorBox.textContent = msg; errorBox.classList.add('visible'); }
+  };
+
+  if (!emailInput?.value.trim()) {
+    showError('Ingresa tu correo electrónico (NombreUsuario) para continuar.');
+    emailInput?.focus();
     return;
   }
-  if (errorBox) errorBox.classList.remove('visible');
 
-  sessionStorage.setItem('sofi-role', currentRole);
-  document.getElementById('login-screen').style.display = 'none';
-  const shell = document.getElementById('app-shell');
-  if (shell) shell.classList.add('visible');
-  setRoleUI();
-  buildNav();
-  window.location.href = 'dashboard.html';
+  try {
+    // Aquí mandamos el usuario a Javalin (Contraseña quemada por ahora, hasta que agregues el input visual)
+    const payload = {
+      NombreUsuario: emailInput.value.trim(),
+      Contrasena: "TuContrasenaAqui123" 
+    };
+
+    const response = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error('Credenciales incorrectas');
+
+    const usuario = await response.json();
+    currentRole = usuario.Rol.toLowerCase(); // Guarda si es directivo, vendedor o asistente
+    sessionStorage.setItem('sofi-role', currentRole);
+
+    errorBox?.classList.remove('visible');
+    
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-shell')?.classList.add('visible');
+    
+    setRoleUI();
+    buildNav();
+    window.location.href = 'dashboard.html';
+
+  } catch (error) {
+    showError(error.message || 'Error al conectar con el servidor.');
+  }
 }
 
 function doLogout() {
   sessionStorage.removeItem('sofi-role');
-  const shell = document.getElementById('app-shell');
-  if (shell) shell.classList.remove('visible');
-  var sb = document.getElementById('sidebar');
-  var scrim = document.getElementById('sidebar-scrim');
-  if (sb) sb.classList.remove('open');
-  if (scrim) scrim.classList.remove('visible');
+  document.getElementById('app-shell')?.classList.remove('visible');
+  document.getElementById('sidebar')?.classList.remove('open');
+  document.getElementById('sidebar-scrim')?.classList.remove('visible');
+  
   const loginScreen = document.getElementById('login-screen');
   if (loginScreen) loginScreen.style.display = 'flex';
   window.location.href = 'login.html';
@@ -199,78 +198,77 @@ function buildNav() {
   const nav = document.getElementById('sb-nav');
   if (!nav) return;
   nav.innerHTML = '';
+  
   navConfig[currentRole].forEach(section => {
     const lbl = document.createElement('div');
     lbl.className = 'nav-section-label';
     lbl.textContent = section.section;
     nav.appendChild(lbl);
+    
     section.items.forEach(item => {
       const anchor = document.createElement('a');
       anchor.className = 'nav-item';
       anchor.dataset.id = item.id;
       anchor.setAttribute('href', getPageTarget(item.id));
       anchor.innerHTML = `<span class="nav-icon">${item.icon}</span>${item.label}`;
-      anchor.addEventListener('click', () => { closeSidebarOnMobile(); });
+      anchor.addEventListener('click', closeSidebarOnMobile);
       nav.appendChild(anchor);
     });
   });
 }
 
 function toggleSidebar() {
-  var sb = document.getElementById('sidebar');
-  var scrim = document.getElementById('sidebar-scrim');
-  if (sb) sb.classList.toggle('open');
-  if (scrim) scrim.classList.toggle('visible');
+  document.getElementById('sidebar')?.classList.toggle('open');
+  document.getElementById('sidebar-scrim')?.classList.toggle('visible');
 }
+
 function closeSidebarOnMobile() {
   if (window.innerWidth <= 900) {
-    var sb = document.getElementById('sidebar');
-    var scrim = document.getElementById('sidebar-scrim');
-    if (sb) sb.classList.remove('open');
-    if (scrim) scrim.classList.remove('visible');
+    document.getElementById('sidebar')?.classList.remove('open');
+    document.getElementById('sidebar-scrim')?.classList.remove('visible');
   }
 }
 
 /* ---- NAVEGACIÓN ---- */
 function navigate(viewId, subLabel) {
   currentView = viewId;
-  var navItems = document.querySelectorAll('.nav-item');
-  for (var i = 0; i < navItems.length; i++) {
-    var n = navItems[i];
-    if (n.dataset.id === viewId) n.classList.add('active');
-    else n.classList.remove('active');
-  }
+  
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.id === viewId);
+  });
 
   const lbl = subLabel || viewLabels[viewId] || viewId;
-  document.getElementById('breadcrumb').innerHTML =
-    `<span>SOFI</span><span class="sep">›</span><span class="current">${lbl}</span>`;
+  const breadcrumb = document.getElementById('breadcrumb');
+  if (breadcrumb) {
+    breadcrumb.innerHTML = `<span>SOFI</span><span class="sep">›</span><span class="current">${lbl}</span>`;
+  }
 
   const pc = document.getElementById('page-content');
-  pc.innerHTML = renderView(viewId);
-  pc.scrollTop = 0;
+  if (pc) {
+    pc.innerHTML = renderView(viewId);
+    pc.scrollTop = 0;
+  }
 }
 
 /* Alias retro-compatible usado por algunas vistas heredadas */
-function navigate2(viewId, sub) { navigate(viewId, sub); }
+const navigate2 = (viewId, sub) => navigate(viewId, sub);
 
 /* ---- ENRUTADOR DE VISTAS ---- */
 function renderView(id) {
-  // Ruta global, disponible sin importar el rol activo.
   if (id === 'design-system') return viewDesignSystem();
 
   const r = currentRole;
   if (r === 'directivo') {
     switch (id) {
-      case 'dashboard':   return viewDirectivoDashboard();
-      case 'desarrollos': return viewDesarrollos();
-      case 'lotes':       return viewLotes();
-      case 'clientes':    return viewClientes();
-      case 'contratos':   return viewContratos();
-      case 'flujo':       return viewFlujo();
-      case 'analisis':    return viewAnalisis();
-      case 'usuarios':    return viewUsuarios();
-      case 'roles':       return viewRoles();
-      /* sub-vistas */
+      case 'dashboard':          return viewDirectivoDashboard();
+      case 'desarrollos':        return viewDesarrollos();
+      case 'lotes':              return viewLotes();
+      case 'clientes':           return viewClientes();
+      case 'contratos':          return viewContratos();
+      case 'flujo':              return viewFlujo();
+      case 'analisis':           return viewAnalisis();
+      case 'usuarios':           return viewUsuarios();
+      case 'roles':              return viewRoles();
       case 'crear-desarrollo':   return viewCrearDesarrollo();
       case 'detalle-desarrollo': return viewDetalleDesarrollo();
       case 'crear-lote':         return viewCrearLote();
@@ -282,44 +280,41 @@ function renderView(id) {
       case 'crear-usuario':      return viewCrearUsuario();
       case 'crear-rol':          return viewCrearRol();
       case 'detalle-flujo':      return viewDetalleFlujo();
-      default: return viewDirectivoDashboard();
+      default:                   return viewDirectivoDashboard();
     }
   }
   if (r === 'vendedor') {
     switch (id) {
-      case 'dashboard':        return viewVendedorDashboard();
-      case 'clientes':         return viewVendedorClientes();
-      case 'lotes':            return viewVendedorLotes();
-      case 'contratos':        return viewVendedorContratos();
-      case 'crear-cliente':    return viewCrearClienteVend();
-      case 'simulador':        return viewSimulador();
-      case 'detalle-contrato': return viewDetalleContrato();
-      case 'crear-contrato':   return viewCrearContratoVend();
-      case 'detalle-lote':     return viewDetalleLote();
-      default: return viewVendedorDashboard();
+      case 'clientes':           return viewVendedorClientes();
+      case 'lotes':              return viewVendedorLotes();
+      case 'contratos':          return viewVendedorContratos();
+      case 'crear-cliente':      return viewCrearClienteVend();
+      case 'simulador':          return viewSimulador();
+      case 'detalle-contrato':   return viewDetalleContrato();
+      case 'crear-contrato':     return viewCrearContratoVend();
+      case 'detalle-lote':       return viewDetalleLote();
+      default:                   return viewVendedorDashboard();
     }
   }
   if (r === 'asistente') {
     switch (id) {
-      case 'dashboard':      return viewAsistenteDashboard();
-      case 'flujo':          return viewAsistenteFlujo();
-      case 'clientes':       return viewAsistenteClientes();
-      case 'testigos':       return viewTestigos();
-      case 'crear-testigo':  return viewCrearTestigo();
-      case 'registrar-pago': return viewRegistrarPago();
-      case 'detalle-pago':   return viewDetallePago();
-      default: return viewAsistenteDashboard();
+      case 'flujo':              return viewAsistenteFlujo();
+      case 'clientes':           return viewAsistenteClientes();
+      case 'testigos':           return viewTestigos();
+      case 'crear-testigo':      return viewCrearTestigo();
+      case 'registrar-pago':     return viewRegistrarPago();
+      case 'detalle-pago':       return viewDetallePago();
+      default:                   return viewAsistenteDashboard();
     }
   }
   return '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Vista no encontrada</div></div>';
 }
 
-/* Cierra la barra lateral móvil si la ventana crece a escritorio */
+/* Listeners globales */
 window.addEventListener('DOMContentLoaded', initStandalonePage);
-window.addEventListener('resize', function() {
+window.addEventListener('resize', () => {
   if (window.innerWidth > 900) {
-    var sb = document.getElementById('sidebar');
-    if (sb) sb.classList.remove('open');
+    document.getElementById('sidebar')?.classList.remove('open');
   }
 });
 
@@ -432,35 +427,14 @@ function viewDirectivoDashboard(){
 }
 
 function viewDesarrollos(){
+  setTimeout(() => fetchDesarrollos(), 0);
   return `
   <div class="section-header">
     <div class="section-title">Desarrollos Inmobiliarios</div>
     <button class="btn-accent" onclick="navigate('crear-desarrollo')">＋ Nuevo Desarrollo</button>
   </div>
-  <div class="dev-map" style="margin-bottom:24px">
-    ${[
-      {name:'Las Palmas Residencial',loc:'Querétaro, Qro.',lotes:100,disp:32,icon:'🏡',status:'Activo'},
-      {name:'Vista del Lago',loc:'Guadalajara, Jal.',lotes:60,disp:20,icon:'🌊',status:'Activo'},
-      {name:'El Encino',loc:'CDMX',lotes:40,disp:15,icon:'🌳',status:'Activo'},
-      {name:'Hacienda San José',loc:'Monterrey, NL',lotes:80,disp:80,icon:'🏰',status:'Preventa'},
-      {name:'Jardines del Sur',loc:'Puebla, Pue.',lotes:55,disp:0,icon:'🌺',status:'Cerrado'},
-      {name:'Bosques Norte',loc:'León, Gto.',lotes:90,disp:45,icon:'🌲',status:'Activo'},
-    ].map(d=>`
-    <div class="dev-card" onclick="navigate('detalle-desarrollo')">
-      <div class="dev-card-thumb">${d.icon}</div>
-      <div class="dev-card-body">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div class="dev-card-name">${d.name}</div>
-          <span class="chip ${d.status==='Activo'?'chip-green':d.status==='Preventa'?'chip-warn':'chip-gray'}">${d.status}</span>
-        </div>
-        <div class="dev-card-meta">📍 ${d.loc}</div>
-        <div class="dev-card-stats">
-          <div class="dev-stat"><div class="dev-stat-num">${d.lotes}</div><div class="dev-stat-label">Total</div></div>
-          <div class="dev-stat"><div class="dev-stat-num" style="color:var(--c-accent)">${d.disp}</div><div class="dev-stat-label">Disponibles</div></div>
-          <div class="dev-stat"><div class="dev-stat-num" style="color:var(--c-error)">${d.lotes-d.disp}</div><div class="dev-stat-label">Vendidos</div></div>
-        </div>
-      </div>
-    </div>`).join('')}
+  <div class="dev-map" id="cards-desarrollos-body" style="margin-bottom:24px">
+    <div class="alert-card" style="width:100%;text-align:center;">Cargando desarrollos...</div>
   </div>`;
 }
 
@@ -527,6 +501,7 @@ function viewDetalleDesarrollo(){
 }
 
 function viewLotes(){
+  setTimeout(() => fetchLotes(), 0);
   return `
   <div class="section-header">
     <div class="section-title">Gestión de Lotes</div>
@@ -540,24 +515,12 @@ function viewLotes(){
     </div>
     <table>
       <thead><tr><th>ID</th><th>Desarrollo</th><th>Núm. Lote</th><th>Superficie (m²)</th><th>Precio de Lista</th><th>Estatus</th><th>Acciones</th></tr></thead>
-      <tbody>
-        ${[
-          {id:'L-001',dev:'Las Palmas',num:'A-01',m:120,precio:'$380,000',st:'Disponible'},
-          {id:'L-002',dev:'Las Palmas',num:'A-02',m:135,precio:'$420,000',st:'Vendido'},
-          {id:'L-003',dev:'Vista del Lago',num:'B-01',m:98,precio:'$295,000',st:'Reservado'},
-          {id:'L-004',dev:'El Encino',num:'C-01',m:200,precio:'$680,000',st:'Disponible'},
-          {id:'L-005',dev:'Las Palmas',num:'A-03',m:110,precio:'$355,000',st:'Vendido'},
-          {id:'L-006',dev:'Bosques Norte',num:'D-01',m:150,precio:'$510,000',st:'Disponible'},
-        ].map(l=>`<tr>
-          <td style="font-weight:600">${l.id}</td>
-          <td>${l.dev}</td><td>${l.num}</td><td>${l.m}</td><td style="font-weight:600">${l.precio}</td>
-          <td><span class="chip ${l.st==='Disponible'?'chip-green':l.st==='Vendido'?'chip-red':'chip-warn'}">${l.st}</span></td>
-          <td><button class="btn-outline btn-sm" onclick="navigate('detalle-lote')">Ver</button></td>
-        </tr>`).join('')}
+      <tbody id="tabla-lotes-body">
+        <tr><td colspan="7">Cargando lotes...</td></tr>
       </tbody>
     </table>
     <div class="table-pagination">
-      <span>Mostrando 1–6 de 84 lotes</span>
+      <span>Mostrando lotes reales desde backend</span>
       <div style="display:flex;gap:4px">
         <button class="pag-btn active">1</button><button class="pag-btn">2</button>
         <button class="pag-btn">3</button><button class="pag-btn">…</button><button class="pag-btn">14</button>
@@ -628,6 +591,7 @@ function viewDetalleLote(){
 }
 
 function viewClientes(){
+  setTimeout(() => fetchClientes(), 0);
   return `
   <div class="section-header">
     <div class="section-title">Clientes</div>
@@ -635,31 +599,17 @@ function viewClientes(){
   </div>
   <div class="table-wrap">
     <div class="table-toolbar">
-      <input class="search-input" placeholder="Buscar por nombre, RFC…" style="max-width:260px">
+      <input class="search-input" placeholder="Buscar por nombre, INE…" style="max-width:260px">
       <select class="filter-select"><option>Todos los estados</option><option>Activo</option><option>Inactivo</option></select>
     </div>
     <table>
-      <thead><tr><th>ID</th><th>Nombre Completo</th><th>RFC</th><th>Teléfono</th><th>Estado Civil</th><th>Contratos</th><th>Acciones</th></tr></thead>
-      <tbody>
-        ${[
-          {id:'C-001',n:'Juan Hernández López',rfc:'HELJ801234AB1',tel:'442-100-2000',ec:'Casado',ctrs:2},
-          {id:'C-002',n:'María García Torres',rfc:'GATM920315CD2',tel:'33-9000-1234',ec:'Soltera',ctrs:1},
-          {id:'C-003',n:'Roberto Domínguez',rfc:'DORR780501EF3',tel:'55-4000-5678',ec:'Divorciado',ctrs:1},
-          {id:'C-004',n:'Ana Pérez Villanueva',rfc:'PEVA850922GH4',tel:'81-2345-6789',ec:'Casada',ctrs:3},
-          {id:'C-005',n:'Luis Sánchez Mora',rfc:'SAML940710IJ5',tel:'222-100-3456',ec:'Soltero',ctrs:1},
-        ].map(c=>`<tr>
-          <td style="font-weight:600">${c.id}</td>
-          <td>${c.n}</td><td style="font-size:12px;font-family:monospace">${c.rfc}</td>
-          <td>${c.tel}</td><td>${c.ec}</td>
-          <td><span class="chip chip-blue">${c.ctrs} contrato${c.ctrs>1?'s':''}</span></td>
-          <td style="display:flex;gap:6px">
-            <button class="btn-outline btn-sm" onclick="navigate('detalle-cliente')">Ver</button>
-          </td>
-        </tr>`).join('')}
+      <thead><tr><th>ID</th><th>Nombre Completo</th><th>Teléfono</th><th>INE</th><th>CURP</th><th>Dirección</th><th>Acciones</th></tr></thead>
+      <tbody id="tabla-clientes-body">
+        <tr><td colspan="7">Cargando clientes...</td></tr>
       </tbody>
     </table>
     <div class="table-pagination">
-      <span>Mostrando 1–5 de 248 clientes</span>
+      <span>Mostrando clientes reales desde backend</span>
       <div style="display:flex;gap:4px">
         <button class="pag-btn active">1</button><button class="pag-btn">2</button><button class="pag-btn">…</button>
       </div>
@@ -755,6 +705,7 @@ function viewDetalleCliente(){
 }
 
 function viewContratos(){
+  setTimeout(() => fetchContratos(), 0);
   return `
   <div class="section-header">
     <div class="section-title">Contratos</div>
@@ -768,29 +719,146 @@ function viewContratos(){
     </div>
     <table>
       <thead><tr><th>ID</th><th>Cliente</th><th>Lote</th><th>Vendedor</th><th>Fecha</th><th>Monto Total</th><th>Plazo</th><th>Estatus</th><th>Acciones</th></tr></thead>
-      <tbody>
-        ${[
-          {id:'CON-0051',cli:'J. Hernández',lote:'A-01',vend:'M. Rodríguez',fecha:'12/Jan/2025',monto:'$380,000',plazo:'36m',st:'Activo'},
-          {id:'CON-0052',cli:'M. García',lote:'B-01',vend:'L. García',fecha:'18/Feb/2025',monto:'$295,000',plazo:'24m',st:'Activo'},
-          {id:'CON-0053',cli:'R. Domínguez',lote:'C-01',vend:'M. Rodríguez',fecha:'05/Mar/2025',monto:'$680,000',plazo:'48m',st:'Atrasado'},
-          {id:'CON-0054',cli:'A. Pérez',lote:'A-02',vend:'P. Torres',fecha:'22/Apr/2025',monto:'$420,000',plazo:'36m',st:'Activo'},
-          {id:'CON-0055',cli:'L. Sánchez',lote:'D-01',vend:'R. Sánchez',fecha:'01/May/2025',monto:'$510,000',plazo:'60m',st:'Liquidado'},
-        ].map(c=>`<tr>
-          <td style="font-weight:600">${c.id}</td><td>${c.cli}</td><td>${c.lote}</td>
-          <td>${c.vend}</td><td>${c.fecha}</td>
-          <td style="font-weight:600">${c.monto}</td><td>${c.plazo}</td>
-          <td><span class="chip ${c.st==='Activo'?'chip-green':c.st==='Atrasado'?'chip-red':'chip-blue'}">${c.st}</span></td>
-          <td><button class="btn-outline btn-sm" onclick="navigate('detalle-contrato')">Ver</button></td>
-        </tr>`).join('')}
+      <tbody id="tabla-contratos-body">
+        <tr><td colspan="9">Cargando contratos...</td></tr>
       </tbody>
     </table>
     <div class="table-pagination">
-      <span>Mostrando 1–5 de 142 contratos</span>
+      <span>Mostrando contratos reales desde backend</span>
       <div style="display:flex;gap:4px">
         <button class="pag-btn active">1</button><button class="pag-btn">2</button><button class="pag-btn">…</button>
       </div>
     </div>
   </div>`;
+}
+
+function formatCurrency(value) {
+  if (value == null || value === '') return '—';
+  const normalized = Number(String(value).replace(/[^0-9.-]+/g, ''));
+  if (Number.isNaN(normalized)) return String(value);
+  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(normalized);
+}
+
+function formatDate(value) {
+  if (!value) return 'N/A';
+  const date = new Date(value);
+  return isNaN(date) ? String(value) : date.toLocaleDateString('es-MX');
+}
+
+async function fetchDesarrollos() {
+  try {
+    const res = await fetch(`${API_URL}/desarrollos`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const container = document.getElementById('cards-desarrollos-body');
+    if (!container) return;
+    if (!Array.isArray(data) || data.length === 0) {
+      container.innerHTML = '<div class="alert-card" style="width:100%;text-align:center;">No hay desarrollos registrados.</div>';
+      return;
+    }
+    container.innerHTML = data.map(d => `
+      <div class="dev-card" onclick="navigate('detalle-desarrollo')">
+        <div class="dev-card-thumb">🏡</div>
+        <div class="dev-card-body">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div class="dev-card-name">${d.Nombre ?? 'Sin nombre'}</div>
+            <span class="chip chip-green">Activo</span>
+          </div>
+          <div class="dev-card-meta">📍 ${d.Ubicacion ?? 'Ubicación no disponible'}</div>
+          <div class="dev-card-stats">
+            <div class="dev-stat"><div class="dev-stat-num">ID ${d.IdDesarrollo ?? '—'}</div><div class="dev-stat-label">ID</div></div>
+            <div class="dev-stat"><div class="dev-stat-num">${formatDate(d.Fecha_inicio)}</div><div class="dev-stat-label">Inicio</div></div>
+            <div class="dev-stat"><div class="dev-stat-num">—</div><div class="dev-stat-label">Lotes</div></div>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch (err) {
+    const container = document.getElementById('cards-desarrollos-body');
+    if (container) container.innerHTML = `<div class="alert-card" style="width:100%;text-align:center;">Error: ${err.message}</div>`;
+  }
+}
+
+async function fetchLotes() {
+  try {
+    const res = await fetch(`${API_URL}/lotes`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const tbody = document.getElementById('tabla-lotes-body');
+    if (!tbody) return;
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7">No hay lotes registrados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(l => `
+      <tr>
+        <td style="font-weight:600">${l.IdLote ?? ''}</td>
+        <td>${l.IdManzana != null ? `Mzn. ${l.IdManzana}` : 'N/A'}</td>
+        <td>${l.Numero ?? ''}</td>
+        <td>${l.Medidas ?? ''}</td>
+        <td style="font-weight:600">${formatCurrency(l.Precio)}</td>
+        <td><span class="chip ${l.Estado === 'Disponible' ? 'chip-green' : l.Estado === 'Vendido' ? 'chip-red' : 'chip-warn'}">${l.Estado ?? 'Desconocido'}</span></td>
+        <td><button class="btn-outline btn-sm" onclick="navigate('detalle-lote')">Ver</button></td>
+      </tr>`).join('');
+  } catch (err) {
+    const tbody = document.getElementById('tabla-lotes-body');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7">Error: ${err.message}</td></tr>`;
+  }
+}
+
+async function fetchClientes() {
+  try {
+    const res = await fetch(`${API_URL}/clientes`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const tbody = document.getElementById('tabla-clientes-body');
+    if (!tbody) return;
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7">No hay clientes registrados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(c => `
+      <tr>
+        <td style="font-weight:600">${c.IdCliente ?? ''}</td>
+        <td>${c.Nombre ?? ''}</td>
+        <td>${c.Telefono ?? ''}</td>
+        <td style="font-family:monospace">${c.INE ?? ''}</td>
+        <td style="font-family:monospace">${c.CURP ?? ''}</td>
+        <td>${c.Direccion ?? ''}</td>
+        <td style="display:flex;gap:6px"><button class="btn-outline btn-sm" onclick="navigate('detalle-cliente')">Ver</button></td>
+      </tr>`).join('');
+  } catch (err) {
+    const tbody = document.getElementById('tabla-clientes-body');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7">Error: ${err.message}</td></tr>`;
+  }
+}
+
+async function fetchContratos() {
+  try {
+    const res = await fetch(`${API_URL}/contratos`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const tbody = document.getElementById('tabla-contratos-body');
+    if (!tbody) return;
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9">No hay contratos registrados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(c => `
+      <tr>
+        <td style="font-weight:600">${c.IdContrato ?? ''}</td>
+        <td>${c.Cliente ?? ''}</td>
+        <td>${c.Lote != null ? `Lote ${c.Lote}` : ''}</td>
+        <td>${c.Vendedor ?? ''}</td>
+        <td>${formatDate(c.Fecha)}</td>
+        <td style="font-weight:600">—</td>
+        <td>—</td>
+        <td><span class="chip chip-blue">${c.Estatus ?? 'Activo'}</span></td>
+        <td><button class="btn-outline btn-sm" onclick="navigate('detalle-contrato')">Ver</button></td>
+      </tr>`).join('');
+  } catch (err) {
+    const tbody = document.getElementById('tabla-contratos-body');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="9">Error: ${err.message}</td></tr>`;
+  }
 }
 
 function viewCrearContrato(){

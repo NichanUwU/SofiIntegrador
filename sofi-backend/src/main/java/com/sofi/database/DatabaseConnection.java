@@ -6,8 +6,8 @@ import java.sql.SQLException;
 
 public class DatabaseConnection {
     private static final String URL = "jdbc:mysql://localhost:3306/sofi_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-    private static final String USER = "sofi_user";
-    private static final String PASSWORD = "sofipass20"; // Tu contraseña real de MySQL
+    private static final String USER = "sofi";
+    private static final String PASSWORD = "1234"; // Tu contraseña real de MySQL
 
     public static Connection getConnection() throws SQLException, ClassNotFoundException {
         Class.forName("com.mysql.cj.jdbc.Driver");
